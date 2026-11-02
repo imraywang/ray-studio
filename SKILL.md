@@ -1,0 +1,102 @@
+---
+name: ray-studio
+description: 给一条录好的口播或一个主题，做出动效精美的竖屏视频：Agent 写声明文件、自己看关键帧、只重渲改过的场景。用于“用 ray-studio 做”“这条口播做成动效片”“给这个主题做个动效视频”。其他风格库转 ray-explainer；只写稿转 ray-kb / ray-kepu；封面转 ray-cover。不发布。
+---
+
+# Ray Studio
+
+没有编辑台。Ray 只说要什么、哪里不对，Agent 改 `studio.json`，自己看帧，再交片。
+
+`$RS` 指本 skill 目录。视频文件放 `~/Movies/ray-studio/`，不进 vault，也不进这个仓库。
+
+## 流程
+
+```
+口播原片 ─ prep_koubo ─┐
+                       ├─ 分段 → 写 studio.json → check → frames 自己看 → render 给 Ray → final → qa
+主题 ─ 写稿 ─ voice ───┘
+```
+
+### 1. 建工程
+
+```bash
+node $RS/bin/rs.mjs new <英文短名>
+```
+
+### 2. 准备素材
+
+**录好的口播**：抽一帧量鼻梁的 x 像素，先 `--dry-run` 看裁切。抠像慢，放后台。
+
+```bash
+python3 $RS/scripts/prep_koubo.py <工程> <原片> --face-x <像素> --names "这期的英文名"
+```
+
+把脚本打印的时长写进 `footageEnd`，`footage` 填 `pop`、`matte`、`full`、`voice`、`endStill`、`endHead`。
+
+**一个主题**：
+1. 先写稿。讲清一件事用 `ray-kepu`，Ray 下判断用 `ray-kb`。稿子是 Ray 的话，事实要有来源。
+2. 把确认过的旁白存成 txt，数字和字母混写先改成读法，然后配音。`voice.py` 按字数收费，开跑前说一声字数。
+
+```bash
+python3 $RS/scripts/voice.py <工程> <稿子.txt> --voice ray
+```
+
+主题片用 `F` 版式（无真人）。真实素材放 `assets/img/`，用 `figure` 动作。
+
+**配乐**（可选）：放 `assets/audio/bgm.m4a`，`footage.bgm` 指向它。没有就不写这个字段，片子照样出。
+
+### 3. 确认
+
+Ray 没说「直接做」时，分段表（每段讲什么、用什么动作）给 Ray 看过再往下。
+
+### 4. 写 studio.json
+
+**先分段，再选动作。** 不要逐句配特效。读 [动作词汇](references/vocabulary.md)，按这几条判断：
+
+1. 一段讲一个论点，先问这段在**做什么**：对比、算账、立框架、反转、提问、下判断。动作跟着语义选。
+2. 能用动作表达的不写字：差距用 `verdict` 和比例条，不写「差很多」。
+3. 数字必须真实，写明出处。不要为了动效编数据。
+4. 字幕已经说的，画面上不重复；打字卡里打出来的那段，字幕写 `[null, "听写原文"]`。
+5. 一段内元素逐个进场，讲过的让位不撤；段尾一起清场。不要一次全亮再干等。
+6. 疏密交替：密的 `S` 段之后接一段 `A`，给眼睛休息。墨绿一镜只指一处。
+7. 时间写台词，不写秒。听写错字就写错字本身（如 `"数彩"`），字幕用 `["素材", "数彩"]` 纠正。
+
+### 5. 自己先看
+
+```bash
+node $RS/bin/rs.mjs check <工程>
+node $RS/bin/rs.mjs frames <工程> [场景]
+```
+
+用 Read 看 `renders/frames-<场景>.jpg`，查：
+- 字有没有压住、溢出、单字掉行
+- 卡片是否碰标题和字幕，头顶是否在窗外
+- 有没有超过一秒的空画面；动作是否踩在对的字上
+
+自己能修的修完再给 Ray 看。
+
+### 6. 出片
+
+```bash
+node $RS/bin/rs.mjs render <工程> [场景...]    # 试看，只重渲改过的场景
+node $RS/bin/rs.mjs final <工程>               # 交付：画面按帧拼接，整条音频单独混
+python3 ~/.claude/skills/ray-explainer/scripts/qa_video.py --lufs -16 --out <工程>/renders/qa.json <成片>
+```
+
+`final` 提示帧数对不上就是有问题，不要交。
+
+### 7. 改片
+
+Ray 说「0:30 太快」「第 3 层太空」：从时间点找到场景，只改对应的动作，重看关键帧，`render` 那一场，把片段发给 Ray。
+
+词汇不够时，在 `engine/blocks.js` 现写一个动作，并在 `rs.mjs` 的 `sfxOf`、`TIME_KEYS` 补上。好用的留下，写进词汇表。写动作只有一条硬规则：**画面只由 t 决定**，不读时钟，不用随机数，不读上一帧的样式。
+
+## 风格
+
+现在只有一种：奶油方格纸底、黑白灰加墨绿（分屏 `S`、全屏真人 `A`、无真人 `F`）。`F` 版式动作还不够撑满画面，主题片要多放真实截图和录屏，交片时提醒 Ray 这一点。`ali`、`xiaolin`、`fenping`、`qingdan` 还没迁过来，Ray 点名这些时转 `ray-explainer`。
+
+## 边界
+
+- 不发布，只到成片。要封面转 `ray-cover`。
+- 只读原片，不改、不移动。
+- 不复制 overlay-studio 的源码，只学思路。

@@ -103,7 +103,7 @@
 
   /* 打字文档卡：字跟着口播一个个浮上来。支持配图、划掉一个短语、选项、图标、封面 */
   RS.blocks.doc = (b, ctx) => {
-    const node = el("div", "rs-doc-wrap", ctx.stage);
+    const node = el("div", `rs-doc-wrap${b.wide ? " is-wide" : ""}`, ctx.stage);
     const card = el("div", "rs-doc", node);
     if (b.head) el("div", "rs-doc-hd", card, b.head);
     const updates = [];
@@ -289,6 +289,60 @@
         const u = land ? t - land.at : -1;
         const pulse = u > 0 ? 0.04 * Math.exp(-u * 7) * Math.cos(u * 22) : 0;
         card.style.transform = `scale(${(1 + pulse).toFixed(4)})`;
+      },
+    };
+  };
+
+  /* 能数出来的比例：一百个点先全亮，再按比例熄灭，只留下真正命中的那几个 */
+  RS.blocks.tally = (b, ctx) => {
+    const node = el("div", "rs-tally", ctx.stage);
+    const grid = el("div", "rs-tally-grid", node);
+    const total = b.total ?? 100;
+    const dots = Array.from({ length: total }, () => el("i", "", grid));
+    const big = el("div", "rs-tally-big", node, `<span>${b.value}</span><small>${b.unit || ""}</small>`);
+    const label = b.label ? el("div", "rs-tally-label", node, b.label) : null;
+    const miss = total - b.hit;
+    return {
+      node,
+      parts: [node],
+      lands: [{ t: b.land, weight: 1.5 }],
+      render(t) {
+        focusIn(node, t, b.at, { dur: 0.5, blur: 12, scale: 1.05 });
+        dots.forEach((d, i) => {
+          const on = prog(t, b.at + i * 0.006, b.at + 0.1 + i * 0.006);
+          const off = i < miss ? ease.out3(prog(t, b.fade + (i / miss) * (b.land - b.fade), b.fade + (i / miss) * (b.land - b.fade) + 0.12)) : 0;
+          d.style.opacity = (on * (1 - 0.82 * off)).toFixed(3);
+          d.style.background = i >= miss && t >= b.land ? "#054c4c" : "#111";
+          const keep = i >= miss && t >= b.land ? 1 + 0.5 * Math.exp(-(t - b.land) * 7) * Math.cos((t - b.land) * 20) : 1;
+          d.style.transform = `scale(${keep.toFixed(3)})`;
+        });
+        const k = prog(t, b.fade, b.land);
+        const s = t - b.land;
+        big.style.opacity = k > 0 ? 1 : 0;
+        if (label) label.style.opacity = k > 0 ? clamp(k * 6) : 0;
+        big.firstChild.textContent = String(Math.round(b.value * ease.out3(k)));
+        big.style.transform = `scale(${(s > 0 ? 1 + 0.12 * Math.exp(-s * 10) * Math.cos(s * 24) : 1).toFixed(4)})`;
+      },
+    };
+  };
+
+  /* 真实画面：截图或照片虚焦进场，整段缓慢推近，下面带来源 */
+  RS.blocks.figure = (b, ctx) => {
+    const node = el("div", "rs-figure", ctx.stage);
+    const frame = el("div", "rs-figure-frame", node);
+    const im = el("img", "", frame);
+    im.src = b.src;
+    if (b.pos) im.style.objectPosition = b.pos;
+    if (b.fit !== "cover") im.className = "is-contain";
+    if (b.source) el("div", "rs-figure-src", node, b.source);
+    const end = b.exit ?? ctx.dur;
+    return {
+      node,
+      parts: [node],
+      lands: [],
+      render(t) {
+        focusIn(node, t, b.at, { dur: 0.7, blur: 20, scale: 1.08 });
+        im.style.transform = `scale(${lerp(1, 1.06, prog(t, b.at, end)).toFixed(4)})`;
       },
     };
   };

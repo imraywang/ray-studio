@@ -73,9 +73,12 @@
     const node = el("div", "rs-evidence", ctx.stage);
     node.style.left = `${b.x}px`;
     const card = el("div", "rs-card", node);
-    el("div", "rs-card-img", card, `<img src="${b.img}" alt="" style="object-position:${b.imgPos || "50% 20%"}" />`);
+    if (b.img) el("div", "rs-card-img", card, `<img src="${b.img}" alt="" style="object-position:${b.imgPos || "50% 20%"}" />`);
+    else card.classList.add("is-plain");
+    if (b.label) el("div", "rs-card-label", card, b.label);
     const row = el("div", "rs-num-row", card);
     const num = el("span", "rs-num", row, "0");
+    if (b.unit) el("span", "rs-unit", row, b.unit);
     const track = el("div", "rs-track", card);
     const fill = el("div", "rs-fill", track);
     const start = b.countAt ?? b.at;
@@ -101,7 +104,7 @@
         const pulse = hit > 0 ? 0.14 * Math.exp(-hit * 11) * Math.cos(hit * 26) : 0;
         num.style.filter = blurOf(moving ? Math.min(5, dv * 1.1) : 0);
         num.style.transform = `scale(${(1 + pulse).toFixed(4)})`;
-        fill.style.width = `${Math.max(p > 0 ? 3 : 0, (b.value * p * 100) / b.scaleMax).toFixed(3)}%`;
+        fill.style.width = `${Math.max(p > 0 ? 3 : 0, ((b.barValue ?? b.value) * p * 100) / b.scaleMax).toFixed(3)}%`;
       },
     };
   };
@@ -299,7 +302,7 @@
   /* 把声明好的场景拼起来，返回 render(t)。时间都已由 rs build 换算成场景内秒数 */
   function mount(host, scene) {
     const cam = el("div", "rs-cam", host);
-    const ctx = { stage: cam, byId: {} };
+    const ctx = { stage: cam, byId: {}, dur: scene.dur };
     const made = [];
     const yields = [];
     for (const b of scene.beats) {

@@ -1,0 +1,142 @@
+{
+ "title": "topic-test",
+ "words": "words.json",
+ "footage": {
+  "voice": "assets/footage/voice.wav"
+ },
+ "captions": [
+  "10月26号",
+  "微软给",
+  "6万名员工",
+  "发了一份",
+  "自愿离职邀约",
+  "你以为",
+  "这是裁员",
+  "其实不是",
+  [
+   "它问的是",
+   "他问的是"
+  ],
+  "你想不想",
+  "拿一笔钱",
+  "自己走",
+  "同一条新闻",
+  "讲法不一样",
+  "观众",
+  "留下来的时间",
+  "也不一样"
+ ],
+ "scenes": [
+  {
+   "id": "news",
+   "layout": "F",
+   "start": 0,
+   "end": 7.7,
+   "beats": [
+    {
+     "id": "t",
+     "do": "headline",
+     "text": "微软的一封信",
+     "at": 0.1
+    },
+    {
+     "id": "f",
+     "do": "figure",
+     "src": "assets/img/news_cnbc.jpg",
+     "pos": "0 0",
+     "source": "CNBC · 2026-10-26",
+     "at": 0.5,
+     "exit": "你以为-0.3",
+     "exitY": -700
+    },
+    {
+     "id": "d",
+     "do": "doc",
+     "head": "你以为",
+     "at": "你以为",
+     "items": [
+      {
+       "type": "text",
+       "text": "这是裁员通知？",
+       "from": "这是",
+       "to": "裁员+0.3",
+       "strike": {
+        "phrase": "裁员通知",
+        "at": "不是"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ask",
+   "layout": "F",
+   "start": 7.7,
+   "end": 11.3,
+   "beats": [
+    {
+     "id": "t",
+     "do": "headline",
+     "text": "其实它问的是",
+     "at": 0.05
+    },
+    {
+     "id": "d",
+     "do": "doc",
+     "head": "问题",
+     "at": 0.1,
+     "items": [
+      {
+       "type": "text",
+       "text": "你想不想*拿一笔钱自己走*？",
+       "from": "你想",
+       "to": "自己走"
+      },
+      {
+       "type": "choice",
+       "options": [
+        {
+         "label": "走",
+         "at": "自己走-0.3"
+        },
+        {
+         "label": "留",
+         "at": "自己走+0.1"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "point",
+   "layout": "F",
+   "start": 11.3,
+   "end": 15.76,
+   "beats": [
+    {
+     "id": "t",
+     "do": "headline",
+     "text": "同一条新闻",
+     "accent": "同一条",
+     "top": 300,
+     "at": 0.05
+    },
+    {
+     "id": "n",
+     "do": "evidence",
+     "x": 350,
+     "label": "讲法不一样",
+     "value": 1,
+     "unit": "条",
+     "scaleMax": 1,
+     "at": "讲法",
+     "countAt": "讲法+0.1",
+     "land": "观众"
+    }
+   ]
+  }
+ ]
+}

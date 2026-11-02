@@ -1,0 +1,173 @@
+{
+ "title": "percolation-test",
+ "words": "words.json",
+ "footage": {
+  "pop": "assets/footage/face_pop.mp4",
+  "matte": "assets/footage/face_pop_matte.webm",
+  "full": "assets/footage/face_full.mp4",
+  "voice": "assets/footage/voice.wav"
+ },
+ "captions": [
+  "2025年",
+  "美国麻省理工的",
+  "一个研究团队",
+  "翻了",
+  "300多个",
+  "公开的",
+  "企业AI项目",
+  "结论很扎眼",
+  [
+   null,
+   "95%的公司在深层AI上"
+  ],
+  "没看到",
+  "任何",
+  "能算出来的",
+  "回报",
+  "钱花了",
+  "模型也确实",
+  "变得",
+  "越来越*聪明*",
+  "那为什么",
+  "企业上AI",
+  "前半年",
+  "几乎看不到效果呢",
+  [
+   null,
+   "你可能会想是不是AI还不够强报告说问题不在模型而是在落地"
+  ],
+  "流程",
+  "还是老流程",
+  "AI记不住",
+  "公司里的",
+  [
+   "来龙去脉",
+   "来龙取脉"
+  ],
+  "它用一次",
+  "就忘一次",
+  "这种事情",
+  "100多年前",
+  "就发生过一回"
+ ],
+ "scenes": [
+  {
+   "id": "report",
+   "start": 0,
+   "end": 11,
+   "beats": [
+    {
+     "id": "t",
+     "do": "headline",
+     "text": "300 多个 AI 项目",
+     "accent": "300",
+     "at": "翻了"
+    },
+    {
+     "id": "dots",
+     "do": "tally",
+     "hit": 5,
+     "value": 95,
+     "unit": "%",
+     "label": "的公司没看到能算出来的回报",
+     "at": "翻了+0.2",
+     "fade": "95%",
+     "land": "回报"
+    }
+   ]
+  },
+  {
+   "id": "a1",
+   "layout": "A",
+   "start": 11,
+   "end": 13.8,
+   "punch": "聪明"
+  },
+  {
+   "id": "why",
+   "start": 13.8,
+   "end": 22.7,
+   "beats": [
+    {
+     "id": "t",
+     "do": "headline",
+     "text": "前半年看不到效果",
+     "accent": "半年",
+     "at": 0.1
+    },
+    {
+     "id": "d",
+     "do": "doc",
+     "head": "MIT 报告",
+     "at": 0.5,
+     "items": [
+      {
+       "type": "text",
+       "text": "是不是 AI 还不够强？",
+       "from": "是不是",
+       "to": "够强",
+       "strike": {
+        "phrase": "还不够强",
+        "at": "报告说"
+       }
+      },
+      {
+       "type": "text",
+       "text": "问题不在模型，*而在落地*。",
+       "from": "问题",
+       "to": "落地"
+      }
+     ],
+     "wide": true
+    }
+   ]
+  },
+  {
+   "id": "gap",
+   "start": 22.7,
+   "end": 27.7,
+   "beats": [
+    {
+     "id": "t",
+     "do": "headline",
+     "text": "为什么落不了地",
+     "at": 0.05
+    },
+    {
+     "id": "d",
+     "do": "doc",
+     "head": "落地卡在哪",
+     "at": 0.1,
+     "items": [
+      {
+       "type": "text",
+       "text": "流程还是老流程",
+       "from": "流程",
+       "to": "老流程"
+      },
+      {
+       "type": "text",
+       "text": "记不住来龙去脉",
+       "from": "AI记",
+       "to": "取脉"
+      },
+      {
+       "type": "text",
+       "text": "*用一次，忘一次*",
+       "from": "它用",
+       "to": "忘一次"
+      }
+     ],
+     "wide": true
+    }
+   ]
+  },
+  {
+   "id": "a2",
+   "layout": "A",
+   "start": 27.7,
+   "end": 30,
+   "punch": "100多"
+  }
+ ]
+}

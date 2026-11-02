@@ -1,19 +1,20 @@
 # ray-studio
 
-给一条口播或一个主题，做出动效精美、风格可选的视频。没有编辑台：Agent 改声明文件，自己看关键帧，只重渲改过的场景。
+给一条口播或一个主题，做出动效精美的竖屏视频。没有编辑台：Agent 改声明文件，自己看关键帧，只重渲改过的场景。
 
-现在是第一阶段，只有动效层，用真实口播验证效果和修改速度。
+作为 skill 使用：把仓库链到 `~/.claude/skills/ray-studio`，流程见 [SKILL.md](SKILL.md)，全部动作见 [动作词汇](references/vocabulary.md)。依赖 Node、ffmpeg、`hyperframes`、`mlx_whisper`；配音和成片检查目前借用 `ray-explainer` 的脚本。
 
 ## 用法
 
 ```bash
+node bin/rs.mjs new    <英文短名>            # 建工程
 node bin/rs.mjs check  <工程目录>            # 检查台词能否对上、时间是否越界
 node bin/rs.mjs frames <工程目录> [场景]     # 抽关键帧拼成一张图
 node bin/rs.mjs render <工程目录> [场景...]  # 只重渲改过的场景，再拼起来试看
 node bin/rs.mjs final  <工程目录>            # 画面按帧拼接，整条音频单独混，统一响度
 ```
 
-工程目录放 `studio.json`、逐字时间轴 `words.json` 和 `assets/`。素材不进这个仓库。示例见 `examples/story-ladder-hook/`。
+工程目录放 `studio.json`、逐字时间轴 `words.json` 和 `assets/`。素材不进这个仓库。示例见 `examples/`。
 
 ## 声明文件
 
@@ -33,6 +34,8 @@ node bin/rs.mjs final  <工程目录>            # 画面按帧拼接，整条�
 | `doc` | 跟着口播打字 | 字逐个浮上来；可配图、打勾、划掉短语、弹出选项和图标、拽回箭头 |
 | `curve` | 情绪或张力起伏 | 亮笔尖跟着台词走，到节点时弹点、贴标签 |
 | `climax` | 全片一次的高潮 | 各格依次点亮，背后放射光，再扎进去 |
+| `tally` | 比例要数得出来 | 一百个点先全亮，再按比例熄灭，留下的点变墨绿 |
+| `figure` | 真实截图或照片 | 虚焦进场，整段缓慢推近，带来源 |
 | `cta` | 导流 | 墨绿卡说动作，巨号关键词砸下来，小字说换来什么 |
 
 场景分两种版式：`S` 分屏（上画面、中字幕、下探头真人），`A` 全屏真人（`punch` 写在哪个词上推近）。

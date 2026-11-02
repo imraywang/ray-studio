@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // rs：ray-studio 命令行。声明文件 studio.json → 生成 HyperFrames 工程 → 检查、看帧、按场景渲染。
+//   rs new    <英文短名> [--dir 父目录]  建工程：字体、音效和声明文件骨架
 //   rs check  <工程>                    检查声明文件（台词能否对上、时间是否越界）
 //   rs frames <工程> [场景...]          抽关键帧拼成一张图，给 Agent 自己看
 //   rs render <工程> [场景...] [-q looks|delivery]  只重渲改过的场景，再拼起来试看
@@ -11,6 +12,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ENGINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../engine");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ENGINE_JS = ["motion.js", "blocks.js"];
 const HF = process.env.RS_HYPERFRAMES || "hyperframes";
 const FPS = 30;
@@ -81,7 +83,7 @@ function alignCaptions(list, idx, errors) {
   return out;
 }
 
-const TIME_KEYS = new Set(["at", "countAt", "land", "exit", "climb", "lock", "from", "to", "hold", "lit", "burst", "dive", "kwAt", "subAt", "coverAt", "checkAt", "tagAt", "go", "yank", "out"]);
+const TIME_KEYS = new Set(["at", "countAt", "land", "exit", "climb", "lock", "from", "to", "hold", "lit", "burst", "dive", "kwAt", "subAt", "coverAt", "checkAt", "tagAt", "go", "yank", "out", "fade"]);
 
 // ---------- 解析声明文件：台词换成场景内秒数。数字本来就是场景内秒数 ----------
 function load(dir) {
@@ -134,11 +136,11 @@ function load(dir) {
 // ---------- 生成 HyperFrames 工程 ----------
 function compositionHtml(scene) {
   const host = `rs-${scene.id}`;
-  const h = scene.layout === "A" ? 1920 : 960;
+  const h = scene.layout === "S" ? 960 : 1920;
   const css = fs.readFileSync(path.join(ENGINE, "motion.css"), "utf8").replace(".rs-scene", `#${host}`);
   return `<template>
   <style>${css}</style>
-  <div id="${host}" class="${scene.layout === "A" ? "rs-layout-a" : "rs-layout-s"}" data-composition-id="${scene.id}" data-width="1080" data-height="${h}" style="height:${h}px"></div>
+  <div id="${host}" class="rs-layout-${scene.layout.toLowerCase()}" data-composition-id="${scene.id}" data-width="1080" data-height="${h}" style="height:${h}px"></div>
   <script>
     const tl = gsap.timeline({ paused: true });
     const render = RS.mount(document.getElementById(${JSON.stringify(host)}), ${JSON.stringify(scene)});
@@ -181,6 +183,7 @@ function sfxOf(scene) {
     if (b.do === "curve") for (const s of b.route) if (s.land) add("ding", s.at, 0.3);
     if (b.do === "climax") add("swell", b.lit, 0.34);
     if (b.do === "cta") add("ding", b.kwAt, 0.36);
+    if (b.do === "tally") add("ding", b.land, 0.32);
   }
   const seen = new Set();
   return out.filter((s) => {
@@ -201,14 +204,14 @@ function indexHtml(doc, scene) {
   const live = floorMs(clipEnd - scene.start);
   const tail = doc.footageEnd && scene.end > doc.footageEnd ? { at: (doc.footageEnd - scene.start).toFixed(3), len: (scene.end - doc.footageEnd).toFixed(3) } : null;
   const sfx = sfxOf(scene)
-    .map((s, i) => `<audio id="sfx-${i}" class="clip" src="assets/audio/${s.file}.wav" data-start="${s.t}" data-duration="${SFX_LEN[s.file]}" data-volume="${s.vol}" data-track-index="${10 + i}"></audio>`)
+    .map((s, i) => `<audio id="sfx-${i}" class="clip" src="assets/sfx/${s.file}.wav" data-start="${s.t}" data-duration="${SFX_LEN[s.file]}" data-volume="${s.vol}" data-track-index="${10 + i}"></audio>`)
     .join("\n      ");
   const isA = scene.layout === "A";
-  const media = isA
+  const media = scene.layout === "F" ? "" : isA
     ? `<div id="face-wrap"><video id="fa" class="clip" src="${f.full}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="1"></video></div>`
     : `<div id="pop-win"><video id="pw" class="clip" src="${f.pop}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="1"></video>${tail ? `<img id="end-still" class="clip" src="${f.endStill}" alt="" data-start="${tail.at}" data-duration="${tail.len}" data-track-index="1" />` : ""}</div>
       <div id="pop-out"><video id="pm" class="clip" src="${f.matte}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="2"></video>${tail ? `<img id="end-head" class="clip" src="${f.endHead}" alt="" data-start="${tail.at}" data-duration="${tail.len}" data-track-index="2" />` : ""}</div>`;
-  const h = isA ? 1920 : 960;
+  const h = scene.layout === "S" ? 960 : 1920;
   // 全屏真人：整场极慢推近，说到情绪词时弹簧推一下
   const faceJs = isA
     ? `
@@ -253,7 +256,7 @@ ${ENGINE_JS.map((j) => `    <script src="assets/engine/${j}"></script>`).join("\
       ${media}
       <div id="h-${scene.id}" data-composition-id="${scene.id}" data-composition-src="compositions/${scene.id}.html" data-start="0" data-duration="${d}" data-track-index="4" data-track-kind="graphics" data-width="1080" data-height="${h}" style="position:absolute;left:0;top:0;width:1080px;height:${h}px;z-index:5"></div>
       <audio id="voice" class="clip" src="${f.voice}" data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-volume="1" data-track-index="8"></audio>
-      <audio id="bgm" class="clip" src="${f.bgm}" data-start="0" data-duration="${d}" data-media-start="${scene.start}" data-volume="${doc.bgmVolume ?? 0.3}" data-track-index="9"></audio>
+      ${f.bgm ? `<audio id="bgm" class="clip" src="${f.bgm}" data-start="0" data-duration="${d}" data-media-start="${scene.start}" data-volume="${doc.bgmVolume ?? 0.3}" data-track-index="9"></audio>` : ""}
       ${sfx}
     </div>
     <script>
@@ -291,6 +294,18 @@ const pick = (scenes, names) => {
 };
 
 // ---------- 命令 ----------
+function cmdNew(slug, parent) {
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) die("短名只用小写英文、数字和连字符");
+  const day = new Date().toLocaleDateString("sv-SE");
+  const dir = path.join(parent, `${day}-${slug}`);
+  if (fs.existsSync(dir)) die(`已存在：${dir}`);
+  for (const sub of ["fonts", "sfx"]) fs.cpSync(path.join(ROOT, "assets", sub), path.join(dir, "assets", sub), { recursive: true });
+  for (const sub of ["footage", "img", "audio"]) fs.mkdirSync(path.join(dir, "assets", sub), { recursive: true });
+  const stub = { title: slug, words: "words.json", footage: { voice: "assets/footage/voice.wav" }, captions: [], scenes: [] };
+  fs.writeFileSync(path.join(dir, "studio.json"), `${JSON.stringify(stub, null, 1)}\n`);
+  console.log(dir);
+}
+
 function cmdCheck(dir) {
   const { errors, warnings, scenes } = load(dir);
   for (let i = 1; i < scenes.length; i++) if (Math.abs(scenes[i].start - scenes[i - 1].end) > 0.001) errors.push(`${scenes[i].id}：和上一场之间有缺口`);
@@ -314,6 +329,7 @@ function keyTimes(scene) {
     if (b.strike) ts.add(b.strike.at + 0.1);
     if (typeof b.yank === "number") [b.yank - 0.1, b.yank + 0.3].forEach((t) => ts.add(t));
     if (b.do === "verdict") ts.add(b.at + 0.6);
+    if (b.do === "tally") [b.fade + 0.3, (b.fade + b.land) / 2, b.land + 0.05, b.land + 0.5].forEach((t) => ts.add(t));
     if (b.do === "climax") [b.lit + 0.3, b.burst + 0.6, b.dive - 0.3, b.dive + 0.25].forEach((t) => ts.add(t));
     if (b.drops) [b.drops[1] + 0.2, b.drops.at(-1) + 0.27, b.drops.at(-1) + 0.45, (b.climb + b.lock) / 2, b.lock + 0.08].forEach((t) => ts.add(t));
     Object.values(b).forEach((v) => typeof v === "object" && visit(v));
@@ -389,13 +405,16 @@ function cmdFinal(dir, quality) {
   const total = scenes.at(-1).end;
   const f = doc.footage;
   const cues = scenes.flatMap((s) => sfxOf(s).map((x) => ({ ...x, abs: s.start + x.t })));
-  const inputs = [f.voice, f.bgm, ...cues.map((c) => `assets/audio/${c.file}.wav`)].flatMap((p) => ["-i", path.join(dir, p)]);
-  const chains = [`[0:a]aresample=48000[v0]`, `[1:a]volume=${doc.bgmVolume ?? 0.3},aresample=48000[v1]`];
+  const beds = [f.voice, f.bgm].filter(Boolean);
+  const inputs = [...beds, ...cues.map((c) => `assets/sfx/${c.file}.wav`)].flatMap((p) => ["-i", path.join(dir, p)]);
+  const chains = [`[0:a]aresample=48000[b0]`];
+  if (f.bgm) chains.push(`[1:a]volume=${doc.bgmVolume ?? 0.3},aresample=48000[b1]`);
   cues.forEach((c, i) => {
     const ms2 = Math.round(c.abs * 1000);
-    chains.push(`[${i + 2}:a]volume=${c.vol},aresample=48000,adelay=${ms2}|${ms2}[v${i + 2}]`);
+    chains.push(`[${i + beds.length}:a]volume=${c.vol},aresample=48000,adelay=${ms2}|${ms2}[c${i}]`);
   });
-  const mix = `${cues.map((_, i) => `[v${i + 2}]`).join("")}[v0][v1]amix=inputs=${cues.length + 2}:normalize=0:duration=longest,atrim=0:${total.toFixed(3)},loudnorm=I=-16:TP=-1.5:LRA=11[a]`;
+  const labels = [...beds.map((_, i) => `[b${i}]`), ...cues.map((_, i) => `[c${i}]`)].join("");
+  const mix = `${labels}amix=inputs=${beds.length + cues.length}:normalize=0:duration=longest,apad,atrim=0:${total.toFixed(3)},loudnorm=I=-16:TP=-1.5:LRA=11[a]`;
   const audio = path.join(dir, ".studio/cache/master.m4a");
   run("ffmpeg", ["-v", "error", "-y", ...inputs, "-filter_complex", `${chains.join(";")};${mix}`, "-map", "[a]", "-ar", "48000", "-c:a", "aac", "-b:a", "256k", audio]);
   const out = path.join(dir, "renders", `${doc.title}-final.mp4`);
@@ -408,7 +427,12 @@ function cmdFinal(dir, quality) {
 }
 
 const [cmd, target, ...rest] = process.argv.slice(2);
-if (!cmd || !target) die("用法：rs check|frames|render|final <工程目录> [场景...] [-q looks|delivery]");
+if (!cmd || !target) die("用法：rs new <短名> | rs check|frames|render|final <工程目录> [场景...] [-q looks|delivery]");
+if (cmd === "new") {
+  const di = rest.indexOf("--dir");
+  cmdNew(target, di >= 0 ? path.resolve(rest[di + 1]) : path.join(process.env.HOME, "Movies/ray-studio"));
+  process.exit(0);
+}
 const dir = path.resolve(target);
 const qi = rest.indexOf("-q");
 const quality = qi >= 0 ? rest[qi + 1] : cmd === "final" ? "delivery" : "looks";
