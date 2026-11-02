@@ -115,6 +115,17 @@ function load(dir) {
     };
     const beats = (raw.beats || []).map((b) => {
       const out = walk(b, `${raw.id}.${b.id}`);
+      if (b.do === "screen" && b.video) {
+        out.domId = `${raw.id}-${b.id}`;
+        if (!fs.existsSync(path.join(dir, b.video))) errors.push(`${raw.id}.${b.id}：找不到素材 ${b.video}`);
+        else {
+          const len = Number(spawnSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path.join(dir, b.video)], { encoding: "utf8" }).stdout);
+          out.clipLen = len - (b.mediaStart ?? 0);
+          const need = (out.exit !== undefined ? out.exit : dur) - out.at;
+          if (out.clipLen < need - 0.05) warnings.push(`${raw.id}.${b.id}：素材只有 ${len.toFixed(1)} 秒，要放 ${need.toFixed(1)} 秒，后面会定格`);
+        }
+      }
+      if (b.do === "screen" && b.src && !fs.existsSync(path.join(dir, b.src))) errors.push(`${raw.id}.${b.id}：找不到素材 ${b.src}`);
       if (b.do === "headline" && [...b.text].length > 12) warnings.push(`${raw.id}.${b.id}：标题 ${[...b.text].length} 字，竖屏 64 号最多 12 字`);
       if (out.land !== undefined && out.countAt !== undefined && out.land - out.countAt < 0.2) warnings.push(`${raw.id}.${b.id}：计数只有 ${(out.land - out.countAt).toFixed(2)} 秒，看不清`);
       if (out.exit !== undefined && out.at !== undefined && out.exit - out.at < 1) warnings.push(`${raw.id}.${b.id}：只停留 ${(out.exit - out.at).toFixed(2)} 秒`);
@@ -138,9 +149,20 @@ function compositionHtml(scene) {
   const host = `rs-${scene.id}`;
   const h = scene.layout === "S" ? 960 : 1920;
   const css = fs.readFileSync(path.join(ENGINE, "motion.css"), "utf8").replace(".rs-scene", `#${host}`);
+  // 录屏必须静态写进场景，HyperFrames 才认得；引擎再把它搬进画框
+  const clips = scene.beats
+    .filter((b) => b.do === "screen" && b.video)
+    .map((b, i) => {
+      const from = b.at;
+      const to = b.exit !== undefined ? b.exit + 0.38 : scene.dur;
+      return `<video id="${b.domId}" class="clip" src="${b.video}" muted playsinline data-start="${from}" data-duration="${Math.min(to - from, scene.dur - from, b.clipLen ?? Infinity).toFixed(3)}" data-media-start="${b.mediaStart ?? 0}" data-track-index="${20 + i}"></video>`;
+    })
+    .join("\n    ");
   return `<template>
   <style>${css}</style>
-  <div id="${host}" class="rs-layout-${scene.layout.toLowerCase()}" data-composition-id="${scene.id}" data-width="1080" data-height="${h}" style="height:${h}px"></div>
+  <div id="${host}" class="rs-layout-${scene.layout.toLowerCase()}" data-composition-id="${scene.id}" data-width="1080" data-height="${h}" style="height:${h}px">
+    ${clips}
+  </div>
   <script>
     const tl = gsap.timeline({ paused: true });
     const render = RS.mount(document.getElementById(${JSON.stringify(host)}), ${JSON.stringify(scene)});
@@ -163,7 +185,7 @@ function sfxOf(scene) {
     if (b.do === "ladder") {
       add("swell", b.drops[0], 0.32);
       b.drops.forEach((d) => add("click", d + 0.26, 0.38));
-      add("ding", b.lock, 0.28);
+      if (b.lock !== undefined) add("ding", b.lock, 0.28);
     }
     if (b.do === "evidence" && b.exit !== undefined && b.x < 400) add("whoosh", b.exit, 0.32);
     if (b.do === "levelIntro") {
@@ -184,6 +206,10 @@ function sfxOf(scene) {
     if (b.do === "climax") add("swell", b.lit, 0.34);
     if (b.do === "cta") add("ding", b.kwAt, 0.36);
     if (b.do === "tally") add("ding", b.land, 0.32);
+    if (b.do === "screen") {
+      for (const f of b.focus || []) if (f.land) add("click", f.at + (f.dur ?? 0.6), 0.35);
+      for (const l of b.labels || []) add("click", l.at, 0.34);
+    }
   }
   const seen = new Set();
   return out.filter((s) => {
@@ -329,9 +355,10 @@ function keyTimes(scene) {
     if (b.strike) ts.add(b.strike.at + 0.1);
     if (typeof b.yank === "number") [b.yank - 0.1, b.yank + 0.3].forEach((t) => ts.add(t));
     if (b.do === "verdict") ts.add(b.at + 0.6);
+    if (b.do === "screen") [b.at + 0.3, b.at + 1.2, ...(b.focus || []).map((f) => f.at + (f.dur ?? 0.6)), ...(b.labels || []).map((l) => l.at + 0.2)].forEach((t) => ts.add(t));
     if (b.do === "tally") [b.fade + 0.3, (b.fade + b.land) / 2, b.land + 0.05, b.land + 0.5].forEach((t) => ts.add(t));
     if (b.do === "climax") [b.lit + 0.3, b.burst + 0.6, b.dive - 0.3, b.dive + 0.25].forEach((t) => ts.add(t));
-    if (b.drops) [b.drops[1] + 0.2, b.drops.at(-1) + 0.27, b.drops.at(-1) + 0.45, (b.climb + b.lock) / 2, b.lock + 0.08].forEach((t) => ts.add(t));
+    if (b.drops) [b.drops[1] + 0.2, b.drops.at(-1) + 0.27, b.drops.at(-1) + 0.45, ...(b.lock !== undefined ? [(b.climb + b.lock) / 2, b.lock + 0.08] : [])].forEach((t) => ts.add(t));
     Object.values(b).forEach((v) => typeof v === "object" && visit(v));
   };
   scene.beats.forEach(visit);

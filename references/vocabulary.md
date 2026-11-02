@@ -61,6 +61,7 @@
 | 动作 | 什么时候用 | 字段 |
 |---|---|---|
 | `curve` | 情绪、张力、走势 | `path`（x 从 50 到 650 单调）、`route: [{ x, at, mark, tag, tagAt, land, dark }]` |
+| `screen` | 录屏或产品界面，要讲某一处 | `video` 或 `src`、`mediaStart`、`tab`、`source`、`at`、`exit`、`top`、`focus: [{ at, x, y, zoom, dur, land }]`（百分比坐标）、`labels: [{ at, x, y, text, dark }]` |
 | `figure` | 真实截图或照片，默认完整显示 | `src`、`fit`（要铺满写 `cover`）、`pos`、`source`、`at` |
 | `cta` | 导流 | `action`、`keyword`、`reward`、`at`、`kwAt`、`subAt` |
 

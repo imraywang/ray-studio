@@ -43,6 +43,8 @@ python3 $RS/scripts/voice.py <工程> <稿子.txt> --voice ray
 
 主题片用 `F` 版式（无真人）。真实素材放 `assets/img/`，用 `figure` 动作。
 
+**真实素材**：录屏和截图放 `assets/`，用 `screen` 动作。只用允许公开的片段：露出客户、员工、候选人信息的先打码或换片段，商单素材用过审的版本。录屏里的字竖屏看不清时，用 `focus` 推到要讲的那一格。
+
 **配乐**（可选）：放 `assets/audio/bgm.m4a`，`footage.bgm` 指向它。没有就不写这个字段，片子照样出。
 
 ### 3. 确认

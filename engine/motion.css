@@ -116,7 +116,7 @@
 
 /* 没有配图的数字卡 */
 .rs-card.is-plain .rs-num-row { top: 170px; }
-.rs-card.is-plain .rs-num { font-size: 120px; }
+.rs-card.is-plain .rs-num { font-size: 86px; }
 .rs-card-label { position: absolute; left: 0; right: 0; top: 74px; text-align: center; font: 700 40px "HeiBold"; color: #6e6e6e; }
 .rs-unit { font: 700 44px "HeiBold"; margin-left: 10px; color: #6e6e6e; }
 .rs-layout-f .rs-doc-wrap { left: 60px; top: 170px; width: 960px; height: 620px; }
@@ -134,3 +134,15 @@
 .rs-tally-label { position: absolute; left: 548px; top: 400px; width: 352px; font: 700 40px/1.35 "HeiBold"; color: #6e6e6e; }
 .rs-doc-wrap.is-wide { left: 60px; width: 960px; }
 .rs-doc-wrap.is-wide .rs-doc-p { font-size: 60px; }
+
+/* 真实录屏的画框 */
+.rs-screen { position: absolute; left: 40px; top: 118px; width: 1000px; border-radius: 26px; overflow: hidden; background: #fff; border: 2px solid rgba(17,17,17,.12); box-shadow: 0 30px 70px rgba(0,0,0,.2); }
+.rs-screen-bar { height: 44px; display: flex; align-items: center; gap: 10px; padding-left: 20px; background: #f1efe9; border-bottom: 2px solid rgba(17,17,17,.08); font: 700 22px "HeiBold"; color: #767676; }
+.rs-screen-bar i { width: 14px; height: 14px; border-radius: 50%; background: #c9c5bb; }
+.rs-screen-bar span { margin-left: 14px; }
+.rs-screen-view { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: #fff; }
+.rs-screen-inner { position: absolute; inset: 0; }
+.rs-screen-media { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; }
+.rs-screen-label { position: absolute; padding: 10px 24px; border-radius: 14px; background: #111; color: #f4f1ea; font: 700 36px "HeiBold"; white-space: nowrap; box-shadow: 0 10px 24px rgba(0,0,0,.28); opacity: 0; z-index: 3; }
+.rs-screen-label.is-dark { background: #054c4c; }
+.rs-screen-src { padding: 12px 22px; font: 700 22px "HeiBold"; color: #767676; background: #fff; }

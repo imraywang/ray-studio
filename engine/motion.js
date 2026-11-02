@@ -181,7 +181,7 @@
     const plates = b.items.map((label, i) => {
       const wrap = el("div", "rs-plate", node);
       wrap.style.top = `${(n - 1 - i) * (H + GAP)}px`;
-      const body = el("div", "rs-plate-body", wrap, `<b>第 ${i + 1} 层</b><span>${label}</span>`);
+      const body = el("div", "rs-plate-body", wrap, b.plain ? `<b>${label}</b>` : `<b>第 ${i + 1} 层</b><span>${label}</span>`);
       const ring = el("i", "rs-ripple", wrap);
       const pin = el("i", "rs-pin", wrap);
       return { wrap, body, ring, pin, at: b.drops[i] };
@@ -189,11 +189,12 @@
     const FALL = 0.26;
     const marker = el("div", "rs-marker", node);
     const yOf = (i) => (n - 1 - i) * (H + GAP) + H / 2 - 26;
-    const climbAt = (t) => lerp(0, n - 1, ease.inOut(prog(t, b.climb, b.lock)));
+    const hasClimb = b.climb !== undefined;
+    const climbAt = (t) => (hasClimb ? lerp(0, n - 1, ease.inOut(prog(t, b.climb, b.lock))) : 0);
     return {
       node,
       parts: plates.map((p) => p.wrap),
-      lands: plates.map((p, i) => ({ t: p.at + FALL, weight: 0.5 + i * 0.1 })).concat([{ t: b.lock, weight: 1.2 }]),
+      lands: plates.map((p, i) => ({ t: p.at + FALL, weight: 0.5 + i * 0.1 })).concat(hasClimb ? [{ t: b.lock, weight: 1.2 }] : []),
       render(t) {
         rails.forEach((r) => {
           r.style.transform = `scaleY(${ease.expo(prog(t, b.at, b.at + 0.7)).toFixed(4)})`;
@@ -204,7 +205,7 @@
           s.style.transform = `translateY(${px(14 * (1 - k))})`;
         });
         const cur = climbAt(t);
-        const climbing = t >= b.climb;
+        const climbing = hasClimb && t >= b.climb;
         plates.forEach((p, i) => {
           const u = t - p.at;
           if (u < 0) {
@@ -239,12 +240,13 @@
           /* 爬到这一格时墨绿，走过的退到灰；最后一格留在墨绿 */
           const near = climbing ? clamp(1 - Math.abs(cur - i) * 1.6) : 0;
           const passed = climbing ? clamp(cur - i - 0.3) : 0;
-          const hold = i === n - 1 && t >= b.lock ? 1 : 0;
+          const hold = hasClimb && i === n - 1 && t >= b.lock ? 1 : 0;
           const on = Math.max(near, hold);
           p.body.style.setProperty("--on", on.toFixed(3));
           p.body.classList.toggle("is-on", on > 0.5);
           p.body.style.opacity = (1 - 0.42 * passed * (1 - on)).toFixed(3);
         });
+        if (!hasClimb) return;
         const mIn = prog(t, b.climb - 0.12, b.climb + 0.08);
         marker.style.opacity = mIn;
         const locked = t - b.lock;

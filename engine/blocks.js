@@ -326,6 +326,54 @@
     };
   };
 
+  /* 真实录屏：放进带窗口栏的画框。focus 让镜头推到一处，label 贴一句人话。视频元素由 rs 静态写进场景 */
+  RS.blocks.screen = (b, ctx) => {
+    const node = el("div", `rs-screen${b.wide === false ? "" : " is-wide"}`, ctx.stage);
+    if (b.top !== undefined) node.style.top = `${b.top}px`;
+    const bar = el("div", "rs-screen-bar", node, "<i></i><i></i><i></i>");
+    if (b.tab) el("span", "", bar, b.tab);
+    const view = el("div", "rs-screen-view", node);
+    const inner = el("div", "rs-screen-inner", view);
+    const media = b.video ? document.getElementById(b.domId) : el("img", "", inner);
+    if (b.video) inner.appendChild(media);
+    else media.src = b.src;
+    media.classList.add("rs-screen-media");
+    const focus = (b.focus || []).slice().sort((x, y) => x.at - y.at);
+    const labels = (b.labels || []).map((l) => {
+      const n = el("div", `rs-screen-label${l.dark ? " is-dark" : ""}`, view, l.text);
+      n.style.left = `${l.x}%`;
+      n.style.top = `${l.y}%`;
+      return { l, n };
+    });
+    if (b.source) el("div", "rs-screen-src", node, b.source);
+    const cam = (t) => {
+      let cur = { x: 50, y: 50, zoom: 1 };
+      for (const f of focus) {
+        if (t < f.at) break;
+        const k = ease.inOut(prog(t, f.at, f.at + (f.dur ?? 0.6)));
+        cur = { x: lerp(cur.x, f.x, k), y: lerp(cur.y, f.y, k), zoom: lerp(cur.zoom, f.zoom ?? 1.8, k) };
+      }
+      return cur;
+    };
+    return {
+      node,
+      parts: [node],
+      lands: focus.filter((f) => f.land).map((f) => ({ t: f.at + (f.dur ?? 0.6), weight: 0.8 })),
+      render(t) {
+        focusIn(node, t, b.at, { dur: 0.6, blur: 18, y: 30, scale: 1.05 });
+        const c = cam(t);
+        const drift = 1 + 0.03 * prog(t, b.at, b.exit ?? ctx.dur);
+        inner.style.transformOrigin = `${c.x}% ${c.y}%`;
+        inner.style.transform = `scale(${(c.zoom * drift).toFixed(4)})`;
+        labels.forEach(({ l, n }) => {
+          const u = t - l.at;
+          n.style.opacity = u <= 0 ? 0 : clamp(u / 0.08);
+          n.style.transform = `translate(-50%,-50%) scale(${(u <= 0 ? 0.7 : lerp(0.7, 1, spring(u, 18, 8))).toFixed(4)})`;
+        });
+      },
+    };
+  };
+
   /* 真实画面：截图或照片虚焦进场，整段缓慢推近，下面带来源 */
   RS.blocks.figure = (b, ctx) => {
     const node = el("div", "rs-figure", ctx.stage);
