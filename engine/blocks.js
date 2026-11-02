@@ -1,0 +1,353 @@
+/* 解说片常用动作：层级开场、打字文档卡、张力曲线、结尾高潮、导流卡。都是时间 t 的纯函数 */
+(function (RS) {
+  const { ease, spring, prog, clamp, lerp } = RS;
+  const el = (tag, cls, parent, html) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html !== undefined) n.innerHTML = html;
+    if (parent) parent.appendChild(n);
+    return n;
+  };
+  const blurOf = (v) => (v > 0.04 ? `blur(${v.toFixed(2)}px)` : "none");
+  function focusIn(node, t, at, { dur = 0.6, blur = 16, y = 0, scale = 1.06 } = {}) {
+    const k = ease.expo(prog(t, at, at + dur));
+    node.style.opacity = t < at ? 0 : k;
+    node.style.filter = blurOf(blur * (1 - k));
+    node.style.transform = `translateY(${(y * (1 - k)).toFixed(2)}px) scale(${lerp(scale, 1, k).toFixed(4)})`;
+  }
+  const popIn = (node, t, at, { from = 0.6, freq = 17, decay = 8 } = {}) => {
+    const s = t - at;
+    node.style.opacity = s <= 0 ? 0 : clamp(s / 0.08);
+    node.style.transform = `scale(${(s <= 0 ? from : lerp(from, 1, spring(s, freq, decay))).toFixed(4)})`;
+  };
+  /* 把 "不是，*重点*" 拆成单字：*包住的是重点，strike 标记要被划掉的短语 */
+  function chars(parent, text, strike) {
+    const list = [];
+    const parts = text.split("*");
+    parts.forEach((seg, i) => {
+      let host = parent;
+      if (i % 2 === 1) host = el("em", "rs-em", parent);
+      /* 标点粘在前一个字上，不会单独掉到行首 */
+      const addRun = (run, into) =>
+        [...run].forEach((c) => {
+          if (list.length && /[，。？！、：；）》”]/.test(c)) list[list.length - 1].textContent += c;
+          else list.push(el("span", "rs-tc", into, c === " " ? "&nbsp;" : c));
+        });
+      if (strike && seg.includes(strike)) {
+        const [a, b] = seg.split(strike);
+        addRun(a, host);
+        const box = el("span", "rs-sk", host);
+        addRun(strike, box);
+        addRun(b, host);
+      } else addRun(seg, host);
+    });
+    return list;
+  }
+  const rise = (c, t, at) => {
+    const k = ease.out3(prog(t, at, at + 0.22));
+    c.style.opacity = t < at ? 0 : k;
+    c.style.transform = `translateY(${(14 * (1 - k)).toFixed(2)}px)`;
+    c.style.filter = blurOf(6 * (1 - k));
+  };
+
+  /* 层级开场：梯子亮起这一层，镜头扎进这一格；左边留一架小梯子当进度条 */
+  RS.blocks.levelIntro = (b, ctx) => {
+    const node = el("div", "rs-level", ctx.stage);
+    const big = el("div", "rs-ladder rs-level-big", node);
+    const inner = el("div", "rs-dive", big);
+    const H = 88;
+    const GAP = 18;
+    const n = b.items.length;
+    const cur = b.level - 1;
+    const hold = b.hold ?? 1.25;
+    [0, 1].forEach((i) => el("div", `rs-rail ${i ? "rs-rail-r" : "rs-rail-l"}`, inner));
+    let curBody = null;
+    let shine = null;
+    b.items.forEach((label, i) => {
+      const p = el("div", "rs-plate", inner);
+      p.style.top = `${(n - 1 - i) * (H + GAP)}px`;
+      const body = el("div", `rs-plate-body${i === cur ? " is-on" : ""}`, p, `<b>第 ${i + 1} 层</b><span>${label}</span>`);
+      if (i < cur) body.style.opacity = 0.55;
+      if (i > cur) body.style.opacity = 0.4;
+      if (i === cur) {
+        curBody = body;
+        body.style.overflow = "hidden";
+        shine = el("i", "rs-shine", body);
+      }
+    });
+    const cy = (n - 1 - cur) * (H + GAP) + H / 2;
+    inner.style.transformOrigin = `350px ${cy}px`;
+    const mini = el("div", "rs-mini", node);
+    b.items.forEach((_, i) => {
+      const r = el("div", `rs-mini-r${i === cur ? " is-on" : ""}${i < cur ? " is-past" : ""}`, mini, String(i + 1));
+      r.style.top = `${(n - 1 - i) * 60}px`;
+    });
+    return {
+      node,
+      parts: [mini],
+      lands: [{ t: 0.28, weight: 0.7 }, { t: hold + 0.46, weight: 0.9 }],
+      render(t) {
+        const dive = ease.in3(prog(t, hold, hold + 0.5));
+        focusIn(big, t, 0, { dur: 0.55, blur: 14, scale: 0.92 });
+        big.style.opacity = Number(big.style.opacity) * (1 - dive);
+        big.style.visibility = dive >= 1 ? "hidden" : "visible";
+        inner.style.transform = `scale(${lerp(1, 3.6, dive).toFixed(4)})`;
+        inner.style.filter = blurOf(16 * dive);
+        const pop = t < 0.28 ? 0.84 : lerp(0.84, 1, spring(t - 0.28, 18, 8));
+        curBody.style.transform = `scale(${pop.toFixed(4)})`;
+        shine.style.transform = `translateX(${lerp(-200, 760, ease.inOut(prog(t, 0.5, 1.1))).toFixed(1)}px) skewX(-18deg)`;
+        focusIn(mini, t, hold + 0.4, { dur: 0.6, blur: 12, scale: 1.2 });
+      },
+    };
+  };
+
+  /* 打字文档卡：字跟着口播一个个浮上来。支持配图、划掉一个短语、选项、图标、封面 */
+  RS.blocks.doc = (b, ctx) => {
+    const node = el("div", "rs-doc-wrap", ctx.stage);
+    const card = el("div", "rs-doc", node);
+    if (b.head) el("div", "rs-doc-hd", card, b.head);
+    const updates = [];
+    const lands = [];
+    let jolt = null;
+    for (const it of b.items) {
+      if (it.type === "text") {
+        const p = el("p", `rs-doc-p${it.dim ? " is-dim" : ""}${it.big ? " is-big" : ""}`, card);
+        if (it.static) {
+          p.textContent = it.static;
+          continue;
+        }
+        const strikeText = it.strike && it.strike.phrase;
+        const list = chars(p, it.text, strikeText);
+        const span = Math.max(it.to - it.from, 0.2);
+        const skBox = p.querySelector(".rs-sk");
+        let line = null;
+        if (skBox) line = el("i", "rs-sk-line", skBox);
+        updates.push((t) => {
+          list.forEach((c, i) => rise(c, t, it.from + (span * i) / Math.max(1, list.length - 1 || 1)));
+          if (line) {
+            const a = it.strike.at;
+            line.style.transform = `scaleX(${ease.out3(prog(t, a, a + 0.22)).toFixed(4)})`;
+            p.style.opacity = (1 - 0.5 * prog(t, a + 0.1, a + 0.3)).toFixed(3);
+          }
+        });
+        if (it.strike) {
+          lands.push({ t: it.strike.at, weight: 1.3 });
+          jolt = it.strike.at;
+        }
+      } else if (it.type === "img") {
+        const im = el("img", "rs-doc-img", card);
+        im.src = it.src;
+        if (it.height) im.style.height = `${it.height}px`;
+        updates.push((t) => focusIn(im, t, it.at, { dur: 0.6, blur: 12, scale: 1.08 }));
+      } else if (it.type === "choice") {
+        const row = el("div", "rs-choice", card);
+        const opts = it.options.map((o, i) => ({ o, n: el("div", `rs-opt${i === 0 ? " is-a" : ""}`, row, o.label) }));
+        updates.push((t) => opts.forEach(({ o, n }) => popIn(n, t, o.at)));
+        it.options.forEach((o) => lands.push({ t: o.at + 0.04, weight: 0.5 }));
+      } else if (it.type === "feature") {
+        /* 左封面右金句：判断要落在一张真实封面旁边 */
+        const row = el("div", "rs-feature", card);
+        const cover = el("img", "rs-feature-cover", row);
+        cover.src = it.cover;
+        const right = el("div", "rs-feature-q", row);
+        const list = chars(right, it.quote);
+        const span = Math.max(it.to - it.from, 0.2);
+        const sig = el("div", "rs-feature-sig", right, it.sign || "");
+        updates.push((t) => {
+          const k = ease.expo(prog(t, it.coverAt, it.coverAt + 0.7));
+          cover.style.opacity = t < it.coverAt ? 0 : k;
+          cover.style.filter = blurOf(14 * (1 - k));
+          cover.style.transform = `rotate(${(-6 * (1 - k)).toFixed(3)}deg) scale(${lerp(1.15, 1, k).toFixed(4)})`;
+          list.forEach((c, i) => rise(c, t, it.from + (span * i) / Math.max(1, list.length - 1)));
+          focusIn(sig, t, it.to, { dur: 0.5, blur: 10, scale: 1 });
+        });
+      } else if (it.type === "icons") {
+        const row = el("div", "rs-icons", card);
+        const cells = it.icons.map((o) => ({ o, n: el("div", "rs-icon", row, o.svg) }));
+        updates.push((t) => cells.forEach(({ o, n }) => popIn(n, t, o.at, { from: 0.7 })));
+        it.icons.forEach((o) => lands.push({ t: o.at + 0.04, weight: 0.5 }));
+      } else if (it.type === "pull") {
+        /* 先把人往一个方向带，再一把拽回来 */
+        const box = el("div", "rs-pull", card, '<i class="rs-pull-line"></i><i class="rs-pull-head"></i>');
+        const line = box.children[0];
+        const head = box.children[1];
+        updates.push((t) => {
+          const go = ease.out3(prog(t, it.go, it.yank));
+          const back = spring(t - it.yank, 15, 7.5);
+          const x = t < it.yank ? go * 470 : lerp(470, 60, back);
+          /* 前进时线从起点长出去；被拽回时线尾留在远端，箭头拖着线往回走 */
+          line.style.left = `${(t < it.yank ? 0 : x).toFixed(1)}px`;
+          line.style.width = `${Math.max(0, t < it.yank ? x : 470 - x).toFixed(1)}px`;
+          head.style.transform = `translateX(${x.toFixed(1)}px) rotate(${t < it.yank ? 45 : -135}deg)`;
+          const on = prog(t, it.go - 0.2, it.go);
+          box.style.opacity = (on * (1 - prog(t, it.out, it.out + 0.3))).toFixed(3);
+        });
+        lands.push({ t: it.yank, weight: 1.4 });
+      }
+    }
+    let badge = null;
+    if (b.checkAt !== undefined) {
+      badge = el("div", "rs-check rs-doc-check", card, '<svg viewBox="0 0 24 24"><path pathLength="1" d="M5 12.5 10 17.5 19 7"/></svg>');
+      lands.push({ t: b.checkAt, weight: 0.5 });
+    }
+    const tick = badge && badge.querySelector("path");
+    return {
+      node,
+      parts: [node],
+      lands,
+      render(t) {
+        focusIn(node, t, b.at, { dur: 0.7, blur: 18, y: 0, scale: 1.12 });
+        updates.forEach((u) => u(t));
+        const s = jolt === null ? -1 : t - jolt;
+        const j = s > 0 && s < 0.5 ? 24 * Math.sin(s * 42) * Math.exp(-s * 9) : 0;
+        card.style.transform = `translateX(${j.toFixed(2)}px) rotate(${(j * 0.05).toFixed(3)}deg)`;
+        if (badge) {
+          badge.style.opacity = t < b.checkAt ? 0 : 1;
+          badge.style.transform = `scale(${(t < b.checkAt ? 0 : spring(t - b.checkAt, 17, 8)).toFixed(4)})`;
+          tick.style.strokeDashoffset = 1 - ease.out3(prog(t, b.checkAt + 0.12, b.checkAt + 0.36));
+        }
+      },
+    };
+  };
+
+  /* 张力曲线：亮笔尖走在最前，跟着台词到每个节点，节点弹出、标签浮现 */
+  RS.blocks.curve = (b, ctx) => {
+    const NS = "http://www.w3.org/2000/svg";
+    const node = el("div", "rs-doc-wrap", ctx.stage);
+    const card = el("div", "rs-doc rs-curve", node);
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 690 560");
+    const make = (tag, attrs, parent = svg) => {
+      const n = document.createElementNS(NS, tag);
+      Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, v));
+      parent.appendChild(n);
+      return n;
+    };
+    const defs = make("defs", {});
+    const clip = make("clipPath", { id: `${b.id}-reveal` }, defs);
+    const clipRect = make("rect", { x: 0, y: 0, width: 0, height: 560 }, clip);
+    make("line", { x1: 50, y1: 480, x2: 650, y2: 480, stroke: "#e6e2d9", "stroke-width": 4 });
+    make("path", { d: `${b.path} L 650 480 L 50 480 Z`, fill: "#054c4c", opacity: 0.08, "clip-path": `url(#${b.id}-reveal)` });
+    const curve = make("path", { d: b.path, fill: "none", stroke: "#054c4c", "stroke-width": 8, "stroke-linecap": "round", "clip-path": `url(#${b.id}-reveal)` });
+    const halo = make("circle", { r: 24, fill: "#9cc2bf", opacity: 0 });
+    const tip = make("circle", { r: 10, fill: "#054c4c", opacity: 0 });
+    card.appendChild(svg);
+    const total = curve.getTotalLength();
+    const lengthAtX = (x) => {
+      let lo = 0;
+      let hi = total;
+      for (let i = 0; i < 24; i++) {
+        const m = (lo + hi) / 2;
+        if (curve.getPointAtLength(m).x < x) lo = m;
+        else hi = m;
+      }
+      return (lo + hi) / 2;
+    };
+    const stops = b.route.map((s) => ({ ...s, len: lengthAtX(s.x), pt: curve.getPointAtLength(lengthAtX(s.x)) }));
+    const marks = stops
+      .filter((s) => s.mark)
+      .map((s) => {
+        const dot = make("circle", { cx: s.pt.x, cy: s.pt.y, r: 14, fill: s.dark ? "#111" : "#054c4c", opacity: 0 });
+        dot.style.transformOrigin = `${s.pt.x}px ${s.pt.y}px`;
+        const tag = s.tag ? el("div", `rs-tag${s.dark ? " is-dark" : ""}`, card, s.tag) : null;
+        if (tag) {
+          tag.style.left = `${s.pt.x + (s.tagDx ?? -30)}px`;
+          tag.style.top = `${s.pt.y + (s.tagDy ?? -82)}px`;
+        }
+        return { s, dot, tag };
+      });
+    const xAt = (t) => {
+      if (t <= stops[0].at) return stops[0].x;
+      for (let i = 1; i < stops.length; i++) {
+        if (t < stops[i].at) return lerp(stops[i - 1].x, stops[i].x, ease.inOut(prog(t, stops[i - 1].at, stops[i].at)) * 0.35 + prog(t, stops[i - 1].at, stops[i].at) * 0.65);
+      }
+      return stops[stops.length - 1].x;
+    };
+    return {
+      node,
+      parts: [node],
+      lands: stops.filter((s) => s.land).map((s) => ({ t: s.at, weight: 1.4 })),
+      render(t) {
+        focusIn(node, t, b.at, { dur: 0.7, blur: 18, scale: 1.12 });
+        const x = xAt(t);
+        clipRect.setAttribute("width", Math.max(0, x + 8).toFixed(2));
+        const pt = curve.getPointAtLength(lengthAtX(x));
+        const on = prog(t, stops[0].at - 0.1, stops[0].at + 0.1) * (1 - prog(t, stops[stops.length - 1].at, stops[stops.length - 1].at + 0.3));
+        tip.setAttribute("cx", pt.x.toFixed(2));
+        tip.setAttribute("cy", pt.y.toFixed(2));
+        tip.setAttribute("opacity", on.toFixed(3));
+        halo.setAttribute("cx", pt.x.toFixed(2));
+        halo.setAttribute("cy", pt.y.toFixed(2));
+        halo.setAttribute("opacity", (0.5 * on).toFixed(3));
+        marks.forEach(({ s, dot, tag }) => {
+          const u = t - s.at;
+          dot.setAttribute("opacity", u > 0 ? 1 : 0);
+          dot.style.transform = `scale(${(u > 0 ? spring(u, 18, 7) : 0).toFixed(4)})`;
+          if (tag) popIn(tag, t, s.tagAt ?? s.at, { from: 0.7 });
+        });
+        const land = stops.find((s) => s.land);
+        const u = land ? t - land.at : -1;
+        const pulse = u > 0 ? 0.04 * Math.exp(-u * 7) * Math.cos(u * 22) : 0;
+        card.style.transform = `scale(${(1 + pulse).toFixed(4)})`;
+      },
+    };
+  };
+
+  /* 全片唯一一次高潮：五格依次点亮，背后放射光，最后镜头扎进去 */
+  RS.blocks.climax = (b, ctx) => {
+    const node = el("div", "rs-level", ctx.stage);
+    const rays = el("div", "rs-rays", node);
+    for (let i = 0; i < 16; i++) el("i", "", rays).style.transform = `rotate(${i * 22.5}deg)`;
+    const big = el("div", "rs-ladder rs-level-big", node);
+    const inner = el("div", "rs-dive", big);
+    inner.style.transformOrigin = "350px 256px";
+    [0, 1].forEach((i) => el("div", `rs-rail ${i ? "rs-rail-r" : "rs-rail-l"}`, inner));
+    const n = b.items.length;
+    const plates = b.items.map((label, i) => {
+      const p = el("div", "rs-plate", inner);
+      p.style.top = `${(n - 1 - i) * 106}px`;
+      return el("div", "rs-plate-body", p, `<b>第 ${i + 1} 层</b><span>${label}</span>`);
+    });
+    return {
+      node,
+      parts: [],
+      lands: plates.map((_, i) => ({ t: b.lit + i * 0.12, weight: 0.45 })),
+      render(t) {
+        const dive = ease.in3(prog(t, b.dive, b.dive + 0.45));
+        focusIn(big, t, b.at, { dur: 0.6, blur: 14, scale: 0.92 });
+        big.style.opacity = Number(big.style.opacity) * (1 - dive);
+        big.style.visibility = dive >= 1 ? "hidden" : "visible";
+        inner.style.transform = `scale(${lerp(1, 2.8, dive).toFixed(4)})`;
+        inner.style.filter = blurOf(16 * dive);
+        plates.forEach((p, i) => {
+          const at = b.lit + i * 0.12;
+          p.classList.toggle("is-on", t >= at);
+          p.style.transform = `scale(${(t < at ? 1 : 1 + 0.06 * Math.exp(-(t - at) * 9) * Math.cos((t - at) * 24)).toFixed(4)})`;
+        });
+        const r = ease.expo(prog(t, b.burst, b.burst + 0.8));
+        rays.style.opacity = (0.32 * r * (1 - dive)).toFixed(3);
+        rays.style.transform = `translate(-50%,-50%) rotate(${(-10 + 10 * r + Math.max(0, t - b.burst) * 6).toFixed(2)}deg) scale(${lerp(0.5, 1, r).toFixed(4)})`;
+      },
+    };
+  };
+
+  /* 导流：墨绿卡说动作，巨号关键词落下来，小字说明换来什么 */
+  RS.blocks.cta = (b, ctx) => {
+    const node = el("div", "rs-cta", ctx.stage);
+    const card = el("div", "rs-cta-card", node, b.action);
+    const kw = el("div", "rs-cta-kw", node, b.keyword);
+    const sub = el("div", "rs-cta-sub", node, b.reward);
+    return {
+      node,
+      parts: [card, sub],
+      lands: [{ t: b.kwAt, weight: 1.6 }],
+      render(t) {
+        focusIn(card, t, b.at, { dur: 0.6, blur: 20, y: 80, scale: 1.1 });
+        const s = t - b.kwAt;
+        kw.style.opacity = s <= 0 ? 0 : clamp(s / 0.06);
+        kw.style.transform = `scale(${(s <= 0 ? 1.8 : lerp(1.8, 1, spring(s, 16, 8))).toFixed(4)})`;
+        focusIn(sub, t, b.subAt, { dur: 0.5, blur: 10, y: 20, scale: 1 });
+      },
+    };
+  };
+})(window.RS);

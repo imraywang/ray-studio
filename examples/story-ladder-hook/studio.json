@@ -1,0 +1,32 @@
+{
+  "$comment": "《同一个故事，你讲到了第几层》开头 11 秒。at 写台词，不写秒：短语#第几次+偏移秒。",
+  "title": "story-ladder-hook",
+  "words": "words.json",
+  "footage": { "pop": "assets/footage/face_pop.mp4", "matte": "assets/footage/face_pop_matte.webm", "voice": "assets/footage/voice.wav", "bgm": "assets/audio/bgm.m4a" },
+  "scenes": [
+    {
+      "id": "contrast",
+      "start": 0,
+      "end": 5.2,
+      "captions": ["说实话", "同样", "一件事情", "有人", "讲出来", "没人看", "有人", "讲出来", "就是", "百万爆款", "差别", "其实", "根本", "不在于", ["素材", "数彩"]],
+      "beats": [
+        { "id": "title", "do": "headline", "text": "同一件事", "at": "同样", "exit": "彩+0.04" },
+        { "id": "low", "do": "evidence", "x": 96, "img": "assets/img/cover_washer.jpg", "value": 1103, "scaleMax": 1300334, "at": "有人#1", "countAt": "没人看", "land": "看", "exit": "彩" },
+        { "id": "high", "do": "evidence", "x": 604, "img": "assets/img/cover_iphone.jpg", "imgPos": "50% 38%", "value": 1300334, "scaleMax": 1300334, "at": "有人#2", "countAt": "就是", "land": "款+0.14", "exit": "彩-0.04" },
+        { "id": "judge", "do": "verdict", "loser": "low", "winner": "high", "at": "款+0.14" },
+        { "id": "gap", "do": "note", "text": "差 1179 倍", "at": "差别", "exit": "彩-0.08" }
+      ]
+    },
+    {
+      "id": "ladder",
+      "start": 5.2,
+      "end": 11.06,
+      "captions": ["而在", "你讲到的", ["*第几层*", "第几层"], "我把", "讲故事能力", "分成了", "5层", "你越", "往上走", "观众", "就越容易", "停下来"],
+      "beats": [
+        { "id": "ask", "do": "headline", "text": "你讲到第几层", "accent": "几", "at": "你讲到", "exit": "我把+0.02" },
+        { "id": "name", "do": "headline", "text": "讲故事的 5 层", "at": "讲故事能力" },
+        { "id": "steps", "do": "ladder", "items": ["念稿", "埋钩子", "跟你有关", "有起伏", "有你自己"], "at": "你讲到", "drops": ["分成", "分成+0.16", "分成+0.32", "分成+0.48", "分成+0.64"], "climb": "往上走-0.1", "lock": "停下" }
+      ]
+    }
+  ]
+}

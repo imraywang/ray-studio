@@ -1,0 +1,106 @@
+/* ray-studio 浅色 IP：奶油底 + 黑白灰 + 一处墨绿 */
+@font-face { font-family: "HeiBold"; src: url("assets/fonts/NotoSansSC-700.woff") format("woff"); font-weight: 700; }
+@font-face { font-family: "HeiHeavy"; src: url("assets/fonts/NotoSansSC-900.woff") format("woff"); font-weight: 900; }
+.rs-scene { position: absolute; left: 0; top: 0; width: 1080px; height: 960px; overflow: hidden; }
+.rs-cam { position: absolute; inset: 0; transform-origin: 50% 42%; will-change: transform; }
+.rs-wrap { position: absolute; inset: 0; }
+.rs-accent { color: #054c4c; }
+
+.rs-headline { z-index: 2; position: absolute; left: 0; right: 0; top: 74px; text-align: center; white-space: nowrap;
+  font: 900 64px "HeiHeavy"; color: #111; }
+.rs-ch { display: inline-block; white-space: pre; }
+
+.rs-evidence { position: absolute; top: 200px; width: 380px; height: 470px; transform-origin: 50% 60%; }
+.rs-card { position: absolute; inset: 0; border-radius: 30px; background: #fff; border: 2px solid rgba(17,17,17,.08);
+  box-shadow: 0 24px 50px rgba(17,17,17,.12); overflow: hidden; }
+.rs-card-img { position: absolute; left: 0; top: 0; width: 100%; height: 318px; overflow: hidden; }
+.rs-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rs-num-row { position: absolute; left: 0; right: 0; top: 332px; text-align: center; }
+.rs-num { display: inline-block; font: 900 62px "HeiHeavy"; font-feature-settings: "tnum"; letter-spacing: -.02em; color: #111; }
+.rs-track { position: absolute; left: 30px; right: 30px; bottom: 28px; height: 12px; border-radius: 6px; background: #e8e5de; overflow: hidden; }
+.rs-fill { height: 100%; border-radius: 6px; background: #111; }
+.rs-strike { position: absolute; left: 52px; right: 52px; top: 372px; height: 7px; border-radius: 4px; background: #111;
+  transform: scaleX(0); transform-origin: 0 50%; }
+.rs-outline { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.rs-outline rect { fill: none; stroke: #054c4c; stroke-width: 5; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.rs-check { position: absolute; right: 18px; top: 18px; width: 68px; height: 68px; border-radius: 50%; background: #054c4c; opacity: 0;
+  box-shadow: 0 8px 18px rgba(5,76,76,.35); }
+.rs-check svg { width: 100%; height: 100%; }
+.rs-check path { fill: none; stroke: #f4f1ea; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.rs-note { position: absolute; left: 50%; top: 692px; padding: 12px 34px; border-radius: 44px; background: #111; color: #f4f1ea;
+  font: 700 42px "HeiBold"; white-space: nowrap; transform-origin: 50% 50%; }
+
+.rs-ladder { position: absolute; left: 190px; top: 206px; width: 700px; height: 512px; }
+.rs-rail { position: absolute; top: -22px; bottom: -14px; width: 10px; border-radius: 5px; background: #111; transform-origin: 50% 100%; }
+.rs-rail-l { left: 0; } .rs-rail-r { right: 0; }
+.rs-plate { position: absolute; left: 34px; right: 34px; height: 88px; }
+.rs-plate-body { position: absolute; inset: 0; --on: 0; border-radius: 18px; background: #fff; border: 2px solid rgba(17,17,17,.12);
+  box-shadow: 0 14px 28px rgba(17,17,17,.13); display: flex; align-items: center; gap: 26px; padding-left: 64px; transform-origin: 22px 14px;
+  font: 700 42px "HeiBold"; color: #111; }
+.rs-plate-body b { font: 900 42px "HeiHeavy"; }
+.rs-plate-body span { color: #6e6e6e; }
+.rs-plate-body.is-on { background: #054c4c; border-color: #054c4c; color: #f4f1ea; }
+.rs-plate-body.is-on span { color: #cfe3e1; }
+.rs-slot { position: absolute; left: 34px; right: 34px; height: 88px; border-radius: 18px; border: 3px dashed rgba(17,17,17,.2); opacity: 0; }
+.rs-plate-body.is-on ~ .rs-pin { background: #f4f1ea; }
+.rs-pin { position: absolute; left: 22px; top: 34px; width: 20px; height: 20px; border-radius: 50%; background: #111; box-shadow: 0 3px 6px rgba(0,0,0,.28); opacity: 0; }
+.rs-ripple { position: absolute; left: 32px; top: 44px; width: 44px; height: 44px; border-radius: 50%; border: 3px solid #111; opacity: 0; }
+.rs-marker { position: absolute; left: -44px; top: 0; width: 52px; height: 52px; border-radius: 50%; background: #054c4c; opacity: 0;
+  box-shadow: 0 8px 18px rgba(5,76,76,.35); }
+.rs-marker::after { content: ""; position: absolute; left: 16px; top: 20px; width: 18px; height: 18px; border-left: 5px solid #f4f1ea; border-top: 5px solid #f4f1ea; transform: rotate(45deg); }
+
+.rs-captions { position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none; }
+.rs-cap { position: absolute; left: 50%; top: 806px; white-space: nowrap; font: 900 84px "HeiHeavy"; color: #111; visibility: hidden; transform-origin: 50% 60%; }
+
+/* 全屏真人版式的字幕：白字压在下方 */
+.rs-layout-a { position: absolute; left: 0; top: 0; width: 1080px; overflow: hidden; }
+.rs-layout-s { position: absolute; left: 0; top: 0; width: 1080px; overflow: hidden; }
+.rs-layout-a .rs-cap { top: 1330px; font-size: 76px; color: #fff; text-shadow: 0 4px 18px rgba(0,0,0,.55), 0 1px 3px rgba(0,0,0,.5); }
+.rs-layout-a .rs-cap.rs-accent { color: #9cc2bf; }
+
+.rs-level { position: absolute; inset: 0; }
+.rs-level-big { transform-origin: 350px 256px; }
+.rs-dive { position: absolute; inset: 0; }
+.rs-shine { position: absolute; left: 0; top: -20px; width: 90px; height: 140px; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.55), rgba(255,255,255,0)); }
+.rs-mini { position: absolute; left: 44px; top: 300px; width: 240px; height: 280px; transform-origin: 0 50%; }
+.rs-mini-r { position: absolute; left: 0; width: 200px; height: 48px; border-radius: 12px; background: #fff; border: 2px solid rgba(17,17,17,.12); display: flex; align-items: center; justify-content: center; font: 900 26px "HeiHeavy"; color: #8c8c8c; box-shadow: 0 8px 16px rgba(17,17,17,.08); }
+.rs-mini-r.is-past { background: #e8e5de; color: #6e6e6e; box-shadow: none; }
+.rs-mini-r.is-on { background: #054c4c; border-color: #054c4c; color: #f4f1ea; }
+
+.rs-doc-wrap { position: absolute; left: 310px; top: 196px; width: 730px; height: 590px; transform-origin: 50% 50%; }
+.rs-doc { position: absolute; inset: 0; border-radius: 30px; background: #fff; border: 2px solid rgba(17,17,17,.1); box-shadow: 0 30px 70px rgba(0,0,0,.14); padding: 38px 44px; overflow: hidden; }
+.rs-doc-hd { font: 700 24px "HeiBold"; letter-spacing: .05em; color: #767676; margin-bottom: 20px; }
+.rs-doc-p { font: 700 48px/1.42 "HeiBold"; color: #111; margin-bottom: 18px; }
+.rs-doc-p.is-dim { color: #b9b6ae; font-size: 34px; }
+.rs-tc { display: inline-block; white-space: pre; opacity: 0; }
+.rs-em { font-style: normal; color: #054c4c; }
+.rs-sk { position: relative; display: inline-block; }
+.rs-sk-line { position: absolute; left: -4px; right: -4px; top: 52%; height: 7px; border-radius: 4px; background: #054c4c; transform: scaleX(0); transform-origin: 0 50%; }
+.rs-doc-img { display: block; width: 100%; height: 232px; object-fit: cover; object-position: 0 0; border-radius: 14px; border: 2px solid rgba(17,17,17,.08); margin-bottom: 22px; opacity: 0; }
+.rs-doc-check { right: 26px; top: 22px; }
+.rs-choice { display: flex; gap: 24px; margin-top: 14px; }
+.rs-opt { flex: 1; height: 96px; border-radius: 22px; border: 3px solid #054c4c; display: flex; align-items: center; justify-content: center; font: 900 48px "HeiHeavy"; color: #111; opacity: 0; }
+.rs-opt.is-a { background: #054c4c; color: #f4f1ea; }
+.rs-feature { display: flex; gap: 26px; align-items: flex-start; }
+.rs-feature-cover { flex: none; width: 196px; height: 261px; border-radius: 14px; object-fit: cover; box-shadow: 0 14px 30px rgba(17,17,17,.18); opacity: 0; }
+.rs-feature-q { font: 900 44px/1.42 "HeiHeavy"; color: #111; padding-top: 4px; }
+.rs-feature-q .rs-em { color: #f4f1ea; }
+.rs-feature-q .rs-em .rs-tc { background: #054c4c; box-shadow: 0 0 0 3px #054c4c; }
+.rs-feature-sig { font: 700 30px "HeiBold"; color: #767676; margin-top: 12px; opacity: 0; }
+.rs-icons { position: absolute; left: 44px; right: 44px; bottom: 36px; display: flex; gap: 22px; }
+.rs-icon { flex: 1; height: 112px; border-radius: 22px; background: #f4f1ea; border: 2px solid rgba(17,17,17,.08); display: flex; align-items: center; justify-content: center; opacity: 0; }
+.rs-pull { position: absolute; left: 80px; top: 250px; width: 560px; height: 40px; opacity: 0; }
+.rs-pull-line { position: absolute; left: 0; top: 16px; height: 8px; border-radius: 4px; background: #111; }
+.rs-pull-head { position: absolute; left: -10px; top: 4px; width: 32px; height: 32px; border-right: 8px solid #054c4c; border-top: 8px solid #054c4c; }
+.rs-curve { padding: 0; }
+.rs-curve svg { position: absolute; inset: 20px; width: 690px; height: 560px; overflow: visible; }
+.rs-tag { position: absolute; padding: 6px 18px; border-radius: 12px; background: #ebe7de; color: #111; font: 700 36px "HeiBold"; white-space: nowrap; opacity: 0; z-index: 3; }
+.rs-tag.is-dark { background: #054c4c; color: #f4f1ea; }
+
+.rs-rays { position: absolute; left: 540px; top: 462px; width: 720px; height: 720px; opacity: 0; }
+.rs-rays i { position: absolute; left: 50%; top: 0; width: 10px; height: 170px; margin-left: -5px; border-radius: 5px; background: #054c4c; transform-origin: 5px 360px; }
+.rs-cta { position: absolute; inset: 0; }
+.rs-cta-card { position: absolute; left: 60px; top: 150px; width: 960px; height: 210px; border-radius: 34px; background: #054c4c; box-shadow: 0 28px 60px rgba(5,76,76,.28); display: flex; align-items: center; justify-content: center; font: 700 68px "HeiBold"; letter-spacing: .08em; color: #f4f1ea; opacity: 0; }
+.rs-cta-kw { position: absolute; left: 0; right: 0; top: 400px; text-align: center; font: 900 190px/1 "HeiHeavy"; color: #111; opacity: 0; }
+.rs-cta-kw em { font-style: normal; color: #054c4c; }
+.rs-cta-sub { position: absolute; left: 0; right: 0; top: 636px; text-align: center; font: 700 46px "HeiBold"; color: #767676; opacity: 0; }
