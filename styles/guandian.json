@@ -1,0 +1,14 @@
+{
+ "name": "观点框架",
+ "summary": "奶油方格纸底，黑白灰加墨绿。动作弹、有重量，适合框架和观点口播。",
+ "tokens": {
+  "bg": "#f4f1ea", "bg-image": "linear-gradient(rgba(17,17,17,.045) 1px, transparent 1px) 0 0 / 48px 48px, linear-gradient(90deg, rgba(17,17,17,.045) 1px, transparent 1px) 0 0 / 48px 48px",
+  "surface": "#ffffff", "ink": "#111111", "sub": "#6e6e6e", "faint": "#b9b6ae", "well": "#e8e5de", "line": "rgba(17,17,17,.1)",
+  "accent": "#054c4c", "accent-text": "#054c4c", "accent-ink": "#f4f1ea", "shadow": "0 24px 50px rgba(17,17,17,.13)",
+  "radius": "30px", "f-heavy": "HeiHeavy", "w-heavy": "900",
+  "cap-color": "#111111", "cap-accent": "#054c4c", "cap-bg": "transparent", "cap-pad": "0", "cap-size-l": "60px", "cap-weight": "900", "cap-a-color": "#ffffff", "cap-a-accent": "#9cc2bf"
+ },
+ "motion": { "bounce": 1, "shock": 6, "sway": 3.2, "rot": 0.18, "float": 3.6, "push": 0.035 },
+ "person": "card",
+ "mix": { "bgm": 0.3, "sfx": 1, "lufs": -16 }
+}

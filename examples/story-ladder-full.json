@@ -1,6 +1,8 @@
 {
- "$comment": "《同一个故事，你讲到了第几层》整片。时间写台词（这一场里找）或场景内秒数。",
  "title": "story-ladder",
+ "style": "guandian",
+ "aspect": "portrait",
+ "$comment": "《同一个故事，你讲到了第几层》整片。时间写台词（这一场里找）或场景内秒数。",
  "words": "words.json",
  "footageEnd": 95.5,
  "bgmVolume": 0.3,

@@ -1,0 +1,14 @@
+{
+ "name": "科普解说",
+ "summary": "深灰底带暗角，墨绿强调，字幕带黑底。节奏快，适合新闻和数据科普。",
+ "tokens": {
+  "bg": "#1c1d1d", "bg-image": "radial-gradient(ellipse at 50% 42%, rgba(255,255,255,.05), rgba(0,0,0,.42) 100%)",
+  "surface": "#2a2c2c", "ink": "#f3f3f0", "sub": "#9a9a96", "faint": "#6e6e6a", "well": "#3a3c3c", "line": "rgba(255,255,255,.1)",
+  "accent": "#0b6b69", "accent-text": "#9cc2bf", "accent-ink": "#f3f3f0", "shadow": "0 30px 70px rgba(0,0,0,.5)",
+  "radius": "20px", "f-heavy": "HeiHeavy", "w-heavy": "900",
+  "cap-color": "#ffffff", "cap-accent": "#ffffff", "cap-bg": "rgba(0,0,0,.55)", "cap-pad": "6px 18px", "cap-size-l": "44px", "cap-weight": "900", "cap-a-color": "#ffffff", "cap-a-accent": "#ffffff", "cap-a-bg": "rgba(0,0,0,.55)", "cap-a-pad": "6px 18px"
+ },
+ "motion": { "bounce": 0.55, "shock": 4, "sway": 1.4, "rot": 0.06, "float": 1.6, "push": 0.04 },
+ "person": "bubble",
+ "mix": { "bgm": 0.2, "sfx": 0.8, "lufs": -16 }
+}

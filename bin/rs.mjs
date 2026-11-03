@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // rs：ray-studio 命令行。声明文件 studio.json → 生成 HyperFrames 工程 → 检查、看帧、按场景渲染。
 //   rs new    <英文短名> [--dir 父目录]  建工程：字体、音效和声明文件骨架
+//   rs styles                           列出可选风格
 //   rs check  <工程>                    检查声明文件（台词能否对上、时间是否越界）
 //   rs frames <工程> [场景...]          抽关键帧拼成一张图，给 Agent 自己看
 //   rs render <工程> [场景...] [-q looks|delivery]  只重渲改过的场景，再拼起来试看
@@ -16,7 +17,12 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ENGINE_JS = ["motion.js", "blocks.js"];
 const HF = process.env.RS_HYPERFRAMES || "hyperframes";
 const FPS = 30;
+const LAYOUTS = { portrait: ["S", "A", "F"], landscape: ["S", "A", "F", "W"] };
+const SIZE = { portrait: [1080, 1920], landscape: [1920, 1080] };
 const SFX_LEN = { click: 0.05, ding: 0.7, whoosh: 0.7, swell: 1.2 };
+
+// --style、--aspect 只用来试看，不写回声明文件
+const TRY = {};
 
 function die(msg) {
   console.error(`rs: ${msg}`);
@@ -83,17 +89,33 @@ function alignCaptions(list, idx, errors) {
   return out;
 }
 
-const TIME_KEYS = new Set(["at", "countAt", "land", "exit", "climb", "lock", "from", "to", "hold", "lit", "burst", "dive", "kwAt", "subAt", "coverAt", "checkAt", "tagAt", "go", "yank", "out", "fade"]);
+const listStyles = () => fs.readdirSync(path.join(ROOT, "styles")).map((f) => f.replace(/\.json$/, "")).sort();
+
+const TIME_KEYS = new Set(["at", "countAt", "land", "exit", "climb", "lock", "from", "to", "hold", "lit", "burst", "dive", "kwAt", "subAt", "coverAt", "checkAt", "tagAt", "go", "yank", "out", "fade", "headTo"]);
 
 // ---------- 解析声明文件：台词换成场景内秒数。数字本来就是场景内秒数 ----------
 function load(dir) {
   const file = path.join(dir, "studio.json");
   if (!fs.existsSync(file)) die(`找不到 ${file}`);
   const doc = JSON.parse(fs.readFileSync(file, "utf8"));
+  // 风格和画幅都要明确写，不留隐含默认值
+  if (TRY.style) doc.style = TRY.style;
+  if (TRY.aspect) doc.aspect = TRY.aspect;
+  if (!SIZE[doc.aspect]) die(`studio.json 要写 "aspect"：portrait 或 landscape`);
+  const styleFile = path.join(ROOT, "styles", `${doc.style}.json`);
+  if (!doc.style || !fs.existsSync(styleFile)) die(`studio.json 要写 "style"，可选：${listStyles().join("、")}`);
+  doc.styleSpec = JSON.parse(fs.readFileSync(styleFile, "utf8"));
   const idx = indexWords(JSON.parse(fs.readFileSync(path.join(dir, doc.words), "utf8")));
   const errors = [];
   const warnings = [];
   const caps = alignCaptions(doc.captions || [], idx, errors);
+  // 章节条：写从哪一场开始，到下一章开始时结束
+  const chapters = (doc.chapters || []).map((c, i, list) => {
+    const head = doc.scenes.find((s) => s.id === c.from);
+    if (!head) errors.push(`chapters[${i}]：找不到场景 ${c.from}`);
+    const next = list[i + 1] && doc.scenes.find((s) => s.id === list[i + 1].from);
+    return { label: c.label, start: snap(head?.start ?? 0), end: snap(next ? next.start : doc.scenes.at(-1).end) };
+  });
   const scenes = doc.scenes.map((raw) => {
     const start = snap(raw.start);
     const end = snap(raw.end);
@@ -113,6 +135,7 @@ function load(dir) {
       }
       return v;
     };
+    if (!LAYOUTS[doc.aspect].includes(raw.layout || "S")) errors.push(`${raw.id}：${doc.aspect} 没有 ${raw.layout} 版式，可选 ${LAYOUTS[doc.aspect].join("、")}`);
     const beats = (raw.beats || []).map((b) => {
       const out = walk(b, `${raw.id}.${b.id}`);
       if (b.do === "screen" && b.video) {
@@ -139,7 +162,7 @@ function load(dir) {
       end: ms(Math.min(dur, i + 1 < inScene.length ? inScene[i + 1].start - start : c.end - start + 0.25)),
     }));
     const punch = raw.punch !== undefined ? rel(raw.punch, `${raw.id}.punch`) : undefined;
-    return { id: raw.id, layout: raw.layout || "S", start, end, dur, life: raw.life, lifeOptions: raw.lifeOptions, beats, captions, punch };
+    return { id: raw.id, layout: raw.layout || "S", aspect: doc.aspect, motion: doc.styleSpec.motion, start, end, dur, life: raw.life, lifeOptions: raw.lifeOptions, beats, captions, punch, chapters };
   });
   return { doc, scenes, errors, warnings };
 }
@@ -147,7 +170,8 @@ function load(dir) {
 // ---------- 生成 HyperFrames 工程 ----------
 function compositionHtml(scene) {
   const host = `rs-${scene.id}`;
-  const h = scene.layout === "S" ? 960 : 1920;
+  const [W, H] = SIZE[scene.aspect];
+  const h = scene.aspect === "portrait" && scene.layout === "S" ? 960 : H;
   const css = fs.readFileSync(path.join(ENGINE, "motion.css"), "utf8").replace(".rs-scene", `#${host}`);
   // 录屏必须静态写进场景，HyperFrames 才认得；引擎再把它搬进画框
   const clips = scene.beats
@@ -160,7 +184,7 @@ function compositionHtml(scene) {
     .join("\n    ");
   return `<template>
   <style>${css}</style>
-  <div id="${host}" class="rs-layout-${scene.layout.toLowerCase()}" data-composition-id="${scene.id}" data-width="1080" data-height="${h}" style="height:${h}px">
+  <div id="${host}" class="rs-layout-${scene.layout.toLowerCase()} rs-aspect-${scene.aspect[0]}" data-composition-id="${scene.id}" data-width="${W}" data-height="${h}" style="height:${h}px">
     ${clips}
   </div>
   <script>
@@ -176,7 +200,7 @@ function compositionHtml(scene) {
 }
 
 // 动作自带的音效。声明文件不用写，改了时间音效跟着走
-function sfxOf(scene) {
+function sfxOf(scene, spec) {
   const out = [];
   const add = (file, t, vol) => out.push({ file, t, vol });
   for (const b of scene.beats) {
@@ -206,18 +230,24 @@ function sfxOf(scene) {
     if (b.do === "climax") add("swell", b.lit, 0.34);
     if (b.do === "cta") add("ding", b.kwAt, 0.36);
     if (b.do === "tally") add("ding", b.land, 0.32);
+    if (b.do === "sheet") for (const f of b.flags || []) add("click", f.at, 0.42);
     if (b.do === "screen") {
       for (const f of b.focus || []) if (f.land) add("click", f.at + (f.dur ?? 0.6), 0.35);
       for (const l of b.labels || []) add("click", l.at, 0.34);
+      for (const m of b.marks || []) add("click", m.at, 0.34);
     }
   }
   const seen = new Set();
-  return out.filter((s) => {
-    const k = `${s.file}@${s.t}`;
-    if (seen.has(k) || s.t < 0 || s.t >= scene.dur) return false;
-    seen.add(k);
-    return true;
-  });
+  const mix = spec.mix || {};
+  return out
+    .filter((s) => {
+      const k = `${s.file}@${s.t}`;
+      if (seen.has(k) || s.t < 0 || s.t >= scene.dur) return false;
+      if (mix.only && !mix.only.includes(s.file)) return false;
+      seen.add(k);
+      return true;
+    })
+    .map((s) => ({ ...s, vol: Number((s.vol * (mix.sfx ?? 1)).toFixed(3)) }));
 }
 
 // 场景视频：S 分屏探头，A 全屏真人。真人素材比成片早结束时，用定格图垫满
@@ -229,15 +259,25 @@ function indexHtml(doc, scene) {
   const clipEnd = doc.footageEnd ? Math.min(scene.end, doc.footageEnd) : scene.end;
   const live = floorMs(clipEnd - scene.start);
   const tail = doc.footageEnd && scene.end > doc.footageEnd ? { at: (doc.footageEnd - scene.start).toFixed(3), len: (scene.end - doc.footageEnd).toFixed(3) } : null;
-  const sfx = sfxOf(scene)
+  const sfx = sfxOf(scene, doc.styleSpec)
     .map((s, i) => `<audio id="sfx-${i}" class="clip" src="assets/sfx/${s.file}.wav" data-start="${s.t}" data-duration="${SFX_LEN[s.file]}" data-volume="${s.vol}" data-track-index="${10 + i}"></audio>`)
     .join("\n      ");
   const isA = scene.layout === "A";
-  const media = scene.layout === "F" ? "" : isA
+  const land = doc.aspect === "landscape";
+  const [W, H] = SIZE[doc.aspect];
+  // 全屏录屏时人不能挡内容，一律缩成角落小窗；画板页才按风格放人像卡
+  const bubble = doc.styleSpec.person === "bubble" || scene.layout === "W";
+  const px = bubble ? { w: 200, h: 200, l: 1680, t: 840, r: "50%", vw: 640, vh: 360, top: -30 } : { w: 360, h: 480, l: 1490, t: 290, r: "var(--radius)", vw: 1000, vh: 562, top: -40 };
+  const faceLeft = (px.w / 2 - (doc.faceX ?? 0.5) * px.vw).toFixed(1);
+  const personClip = `<div id="person" style="left:${px.l}px;top:${px.t}px;width:${px.w}px;height:${px.h}px;border-radius:${px.r}"><video id="pv" class="clip" src="${f.wide}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="2" style="left:${faceLeft}px;top:${px.top}px;width:${px.vw}px;height:${px.vh}px"></video></div>`;
+  const landMedia = isA
+    ? `<div id="face-wrap"><video id="fa" class="clip" src="${f.wide}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="1"></video></div>`
+    : scene.layout === "F" ? "" : personClip;
+  const media = land ? landMedia : scene.layout === "F" ? "" : isA
     ? `<div id="face-wrap"><video id="fa" class="clip" src="${f.full}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="1"></video></div>`
     : `<div id="pop-win"><video id="pw" class="clip" src="${f.pop}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="1"></video>${tail ? `<img id="end-still" class="clip" src="${f.endStill}" alt="" data-start="${tail.at}" data-duration="${tail.len}" data-track-index="1" />` : ""}</div>
       <div id="pop-out"><video id="pm" class="clip" src="${f.matte}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="2"></video>${tail ? `<img id="end-head" class="clip" src="${f.endHead}" alt="" data-start="${tail.at}" data-duration="${tail.len}" data-track-index="2" />` : ""}</div>`;
-  const h = scene.layout === "S" ? 960 : 1920;
+  const h = !land && scene.layout === "S" ? 960 : H;
   // 全屏真人：整场极慢推近，说到情绪词时弹簧推一下
   const faceJs = isA
     ? `
@@ -245,27 +285,28 @@ function indexHtml(doc, scene) {
       const face = document.getElementById("face-wrap");
       const drawFace = (t) => {
         const s = ${scene.punch ?? -1} >= 0 ? t - ${scene.punch ?? -1} : -1;
-        const push = s > 0 ? 0.075 * RS.spring(s, 13, 8) : 0;
-        const [x, y] = s > 0 ? RS.shock(t, [{ t: ${scene.punch ?? -1}, weight: 1 }], 5) : [0, 0];
+        const push = s > 0 ? ${doc.styleSpec.motion?.punch ?? 0.075} * RS.spring(s, 13, 8) : 0;
+        const [x, y] = s > 0 ? RS.shock(t, [{ t: ${scene.punch ?? -1}, weight: 1 }], ${doc.styleSpec.motion?.shock ?? 5}) : [0, 0];
         face.style.transform = \`translate(\${x.toFixed(2)}px,\${y.toFixed(2)}px) scale(\${(1 + 0.018 * t / ${scene.dur} + push).toFixed(4)})\`;
       };
       drawFace(0);
       main.to(clock, { t: ${scene.dur}, duration: ${scene.dur}, ease: "none", onUpdate: () => drawFace(clock.t) }, 0);`
     : "";
   return `<!doctype html>
-<html lang="zh-CN" data-resolution="portrait">
+<html lang="zh-CN" data-resolution="${doc.aspect}">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=1080, height=1920" />
+    <meta name="viewport" content="width=${W}, height=${H}" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
 ${ENGINE_JS.map((j) => `    <script src="assets/engine/${j}"></script>`).join("\n")}
     <style>
+      :root { ${Object.entries(doc.styleSpec.tokens).map(([k, v]) => `--${k}: ${v};`).join(" ")} }
       * { margin: 0; padding: 0; box-sizing: border-box; }
-      html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #f4f1ea; }
+      html, body { margin: 0; width: ${W}px; height: ${H}px; overflow: hidden; background: var(--bg); }
       #root { position: relative; width: 100%; height: 100%; overflow: hidden; }
-      #bg { position: absolute; inset: 0; background:
-        linear-gradient(rgba(17,17,17,.045) 1px, transparent 1px) 0 0 / 48px 48px,
-        linear-gradient(90deg, rgba(17,17,17,.045) 1px, transparent 1px) 0 0 / 48px 48px, #f4f1ea; }
+      #bg { position: absolute; inset: 0; background: var(--bg-image), var(--bg); }
+      #person { position: absolute; overflow: hidden; z-index: 7; border: 5px solid var(--surface); box-shadow: var(--shadow); background: var(--bg); }
+      #person video { position: absolute; }
       #pop-win { position: absolute; left: 60px; top: 1210px; width: 960px; height: 760px; border-radius: 44px; overflow: hidden; box-shadow: 0 30px 70px rgba(0,0,0,.35); z-index: 2; }
       #pop-win video { position: absolute; left: -60px; top: -250px; width: 1080px; height: 960px; }
       #end-still { position: absolute; left: 0; top: 0; width: 960px; height: 710px; object-fit: cover; object-position: 50% 0; }
@@ -273,16 +314,16 @@ ${ENGINE_JS.map((j) => `    <script src="assets/engine/${j}"></script>`).join("\
       #pop-out video { position: absolute; left: -300px; top: 0; width: 1080px; height: 960px; }
       #end-head { position: absolute; left: 0; top: 0; width: 480px; height: 250px; }
       #face-wrap { position: absolute; inset: 0; transform-origin: 50% 32%; z-index: 2; }
-      #face-wrap video { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; object-fit: cover; }
+      #face-wrap video { position: absolute; left: 0; top: 0; width: ${W}px; height: ${H}px; object-fit: cover; }
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="${d}" data-width="1080" data-height="1920">
+    <div id="root" data-composition-id="main" data-start="0" data-duration="${d}" data-width="${W}" data-height="${H}">
       <div id="bg"></div>
       ${media}
-      <div id="h-${scene.id}" data-composition-id="${scene.id}" data-composition-src="compositions/${scene.id}.html" data-start="0" data-duration="${d}" data-track-index="4" data-track-kind="graphics" data-width="1080" data-height="${h}" style="position:absolute;left:0;top:0;width:1080px;height:${h}px;z-index:5"></div>
+      <div id="h-${scene.id}" data-composition-id="${scene.id}" data-composition-src="compositions/${scene.id}.html" data-start="0" data-duration="${d}" data-track-index="4" data-track-kind="graphics" data-width="${W}" data-height="${h}" style="position:absolute;left:0;top:0;width:${W}px;height:${h}px;z-index:5"></div>
       <audio id="voice" class="clip" src="${f.voice}" data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-volume="1" data-track-index="8"></audio>
-      ${f.bgm ? `<audio id="bgm" class="clip" src="${f.bgm}" data-start="0" data-duration="${d}" data-media-start="${scene.start}" data-volume="${doc.bgmVolume ?? 0.3}" data-track-index="9"></audio>` : ""}
+      ${f.bgm ? `<audio id="bgm" class="clip" src="${f.bgm}" data-start="0" data-duration="${d}" data-media-start="${scene.start}" data-volume="${doc.bgmVolume ?? doc.styleSpec.mix?.bgm ?? 0.3}" data-track-index="9"></audio>` : ""}
       ${sfx}
     </div>
     <script>
@@ -310,7 +351,7 @@ function writeProject(dir, doc, scene) {
 
 const sceneHash = (doc, scene) =>
   createHash("sha1")
-    .update(JSON.stringify([scene, doc.footage, compositionHtml(scene), indexHtml(doc, scene), ENGINE_JS.map((j) => fs.readFileSync(path.join(ENGINE, j), "utf8"))]))
+    .update(JSON.stringify([scene, doc.footage, doc.styleSpec, doc.aspect, doc.faceX, compositionHtml(scene), indexHtml(doc, scene), ENGINE_JS.map((j) => fs.readFileSync(path.join(ENGINE, j), "utf8"))]))
     .digest("hex")
     .slice(0, 12);
 
@@ -327,7 +368,7 @@ function cmdNew(slug, parent) {
   if (fs.existsSync(dir)) die(`已存在：${dir}`);
   for (const sub of ["fonts", "sfx"]) fs.cpSync(path.join(ROOT, "assets", sub), path.join(dir, "assets", sub), { recursive: true });
   for (const sub of ["footage", "img", "audio"]) fs.mkdirSync(path.join(dir, "assets", sub), { recursive: true });
-  const stub = { title: slug, words: "words.json", footage: { voice: "assets/footage/voice.wav" }, captions: [], scenes: [] };
+  const stub = { title: slug, style: "", aspect: "", words: "words.json", footage: { voice: "assets/footage/voice.wav" }, captions: [], scenes: [] };
   fs.writeFileSync(path.join(dir, "studio.json"), `${JSON.stringify(stub, null, 1)}\n`);
   console.log(dir);
 }
@@ -381,9 +422,9 @@ function cmdFrames(dir, wanted) {
     run(HF, ["snapshot", dir, "-o", shot, "--at", ts.join(","), "--no-end", "--describe=false"]);
     const pngs = fs.readdirSync(shot).filter((f) => f.endsWith(".png")).sort();
     const cols = Math.min(6, pngs.length);
-    const sheet = path.join(outDir, `frames-${scene.id}.jpg`);
+    const sheet = path.join(outDir, `frames-${scene.id}${TRY.style ? `-${TRY.style}` : ""}.jpg`);
     const inputs = pngs.flatMap((f) => ["-i", path.join(shot, f)]);
-    const filter = `${pngs.map((_, i) => `[${i}:v]scale=360:-1[v${i}]`).join(";")};${pngs.map((_, i) => `[v${i}]`).join("")}xstack=inputs=${pngs.length}:layout=${pngs.map((_, i) => `${(i % cols) * 360}_${Math.floor(i / cols) * 640}`).join("|")}:fill=white[o]`;
+    const filter = `${pngs.map((_, i) => `[${i}:v]scale=${doc.aspect === "landscape" ? 480 : 360}:-1[v${i}]`).join(";")};${pngs.map((_, i) => `[v${i}]`).join("")}xstack=inputs=${pngs.length}:layout=${pngs.map((_, i) => `${(i % cols) * (doc.aspect === "landscape" ? 480 : 360)}_${Math.floor(i / cols) * (doc.aspect === "landscape" ? 270 : 640)}`).join("|")}:fill=white[o]`;
     run("ffmpeg", ["-v", "error", "-y", ...inputs, "-filter_complex", filter, "-map", "[o]", "-frames:v", "1", "-q:v", "3", sheet]);
     console.log(`${scene.id}: ${sheet}  时刻 ${ts.join(" ")}`);
   }
@@ -398,7 +439,8 @@ function renderChunks(dir, doc, scenes, wanted, quality) {
     if (fs.existsSync(chunk)) {
       console.log(`${scene.id}: 没变，用缓存`);
     } else if (wanted.length && !wanted.includes(scene.id)) {
-      die(`${scene.id} 没有可用缓存，先不带场景名跑一次`);
+      console.log(`${scene.id}: 没渲过，这次跳过，试看片里没有这一场`);
+      continue;
     } else {
       writeProject(dir, doc, scene);
       const began = Date.now();
@@ -418,7 +460,7 @@ function cmdRender(dir, wanted, quality) {
   const { doc, scenes, errors } = load(dir);
   if (errors.length) die(errors.join("\n"));
   const list = renderChunks(dir, doc, scenes, wanted, quality);
-  const out = path.join(dir, "renders", `${doc.title}.mp4`);
+  const out = path.join(dir, "renders", `${doc.title}${TRY.style ? `-${TRY.style}` : ""}.mp4`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   run("ffmpeg", ["-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", list, "-c", "copy", out]);
   console.log(out);
@@ -431,17 +473,17 @@ function cmdFinal(dir, quality) {
   const list = renderChunks(dir, doc, scenes, [], quality);
   const total = scenes.at(-1).end;
   const f = doc.footage;
-  const cues = scenes.flatMap((s) => sfxOf(s).map((x) => ({ ...x, abs: s.start + x.t })));
+  const cues = scenes.flatMap((s) => sfxOf(s, doc.styleSpec).map((x) => ({ ...x, abs: s.start + x.t })));
   const beds = [f.voice, f.bgm].filter(Boolean);
   const inputs = [...beds, ...cues.map((c) => `assets/sfx/${c.file}.wav`)].flatMap((p) => ["-i", path.join(dir, p)]);
   const chains = [`[0:a]aresample=48000[b0]`];
-  if (f.bgm) chains.push(`[1:a]volume=${doc.bgmVolume ?? 0.3},aresample=48000[b1]`);
+  if (f.bgm) chains.push(`[1:a]volume=${doc.bgmVolume ?? doc.styleSpec.mix?.bgm ?? 0.3},aresample=48000[b1]`);
   cues.forEach((c, i) => {
     const ms2 = Math.round(c.abs * 1000);
     chains.push(`[${i + beds.length}:a]volume=${c.vol},aresample=48000,adelay=${ms2}|${ms2}[c${i}]`);
   });
   const labels = [...beds.map((_, i) => `[b${i}]`), ...cues.map((_, i) => `[c${i}]`)].join("");
-  const mix = `${labels}amix=inputs=${beds.length + cues.length}:normalize=0:duration=longest,apad,atrim=0:${total.toFixed(3)},loudnorm=I=-16:TP=-1.5:LRA=11[a]`;
+  const mix = `${labels}amix=inputs=${beds.length + cues.length}:normalize=0:duration=longest,apad,atrim=0:${total.toFixed(3)},loudnorm=I=${doc.styleSpec.mix?.lufs ?? -16}:TP=-1.5:LRA=11[a]`;
   const audio = path.join(dir, ".studio/cache/master.m4a");
   run("ffmpeg", ["-v", "error", "-y", ...inputs, "-filter_complex", `${chains.join(";")};${mix}`, "-map", "[a]", "-ar", "48000", "-c:a", "aac", "-b:a", "256k", audio]);
   const out = path.join(dir, "renders", `${doc.title}-final.mp4`);
@@ -453,7 +495,19 @@ function cmdFinal(dir, quality) {
   if (Number(n) !== want) console.log("提醒  帧数和时长对不上，检查接缝");
 }
 
-const [cmd, target, ...rest] = process.argv.slice(2);
+const argv = process.argv.slice(2);
+for (const key of ["style", "aspect"]) {
+  const i = argv.indexOf(`--${key}`);
+  if (i >= 0) [, TRY[key]] = argv.splice(i, 2);
+}
+if (argv[0] === "styles") {
+  for (const id of listStyles()) {
+    const st = JSON.parse(fs.readFileSync(path.join(ROOT, "styles", `${id}.json`), "utf8"));
+    console.log(`${id}  ${st.name}：${st.summary}`);
+  }
+  process.exit(0);
+}
+const [cmd, target, ...rest] = argv;
 if (!cmd || !target) die("用法：rs new <短名> | rs check|frames|render|final <工程目录> [场景...] [-q looks|delivery]");
 if (cmd === "new") {
   const di = rest.indexOf("--dir");

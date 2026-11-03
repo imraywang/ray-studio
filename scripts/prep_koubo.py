@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """口播素材准备：从横屏原片做出 ray-studio 工程要的全部素材。
 
-usage: python3 prep_koubo.py <工程目录> <原片> --face-x 1820 [--from 0] [--end 81.45] [--mic-trim 0.074] [--names "Claude、Codex"] [--no-matte] [--dry-run]
+usage: python3 prep_koubo.py <工程目录> <原片> --face-x 1820 --aspect portrait|landscape [--from 0] [--end 81.45] [--mic-trim 0.074] [--names "Claude、Codex"] [--no-matte] [--dry-run]
 
 产出：
+  assets/footage/face_wide.mp4        横屏原片 1920×1080（--aspect landscape 只出这个，不抠像）
   assets/footage/face_full.mp4        全屏真人 1080×1920，以脸为中心裁 9:16
   assets/footage/face_pop.mp4         探头真人 1080×960，放进下方圆角窗
   assets/footage/face_pop_matte.webm  探头的抠像，头顶越出窗框用。CPU 约 0.25 秒一帧，最慢，放后台
@@ -20,6 +21,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("project")
 ap.add_argument("src")
 ap.add_argument("--face-x", type=float, required=True)
+ap.add_argument("--aspect", choices=["portrait", "landscape"], required=True, help="横屏不裁竖版、不抠像")
 ap.add_argument("--from", dest="start", type=float, default=0, help="从第几秒开始")
 ap.add_argument("--end", type=float, help="用到原片第几秒，默认整条")
 ap.add_argument("--mic-trim", type=float, default=0.074, help="全屏真人从底部多裁掉的高度比例，用来裁掉话筒")
@@ -54,9 +56,13 @@ if not a.dry_run:
     os.makedirs(im, exist_ok=True)
 cut = ["-ss", f"{a.start}", "-t", f"{dur}", "-i", a.src]
 enc = ["-an", "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-g", "30", "-pix_fmt", "yuv420p"]
-run(["ffmpeg", "-v", "error", "-y", *cut, "-vf", f"crop={fw}:{fh}:{fx}:0,scale=1080:1920:flags=lanczos,fps=30", *enc, f"{ft}/face_full.mp4"])
-run(["ffmpeg", "-v", "error", "-y", *cut, "-vf", f"crop={pw}:{ph}:{px}:0,scale=1080:960:flags=lanczos,fps=30", *enc, f"{ft}/face_pop.mp4"])
-run(["ffmpeg", "-v", "error", "-y", "-sseof", "-0.2", "-i", f"{ft}/face_pop.mp4", "-frames:v", "1", "-update", "1", "-vf", "crop=960:710:60:250", f"{im}/end_still_pop.jpg"])
+if a.aspect == "landscape":
+    a.no_matte = True
+    run(["ffmpeg", "-v", "error", "-y", *cut, "-vf", "scale=1920:1080:flags=lanczos,fps=30", *enc, f"{ft}/face_wide.mp4"])
+else:
+    run(["ffmpeg", "-v", "error", "-y", *cut, "-vf", f"crop={fw}:{fh}:{fx}:0,scale=1080:1920:flags=lanczos,fps=30", *enc, f"{ft}/face_full.mp4"])
+    run(["ffmpeg", "-v", "error", "-y", *cut, "-vf", f"crop={pw}:{ph}:{px}:0,scale=1080:960:flags=lanczos,fps=30", *enc, f"{ft}/face_pop.mp4"])
+    run(["ffmpeg", "-v", "error", "-y", "-sseof", "-0.2", "-i", f"{ft}/face_pop.mp4", "-frames:v", "1", "-update", "1", "-vf", "crop=960:710:60:250", f"{im}/end_still_pop.jpg"])
 wav = f"{ft}/_src.wav"
 run(["ffmpeg", "-v", "error", "-y", *cut, "-vn", "-c:a", "pcm_s16le", wav])
 run([sys.executable, f"{HERE}/gate_breaths.py", wav, "-o", f"{ft}/voice.wav", "--verify"])
@@ -72,5 +78,5 @@ if not a.dry_run:
     json.dump(words, open(f"{root}/words.json", "w"), ensure_ascii=False, indent=0)
     os.remove(wav)
     os.remove(f"{ft}/_src.json")
-    real = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f"{ft}/face_full.mp4"], capture_output=True, text=True).stdout)
-    print(f"完成。footageEnd = {real:.2f}；{len(words)} 个字词。whisper 可能在结尾静音里编出重复的字，按最后一句真话截断。")
+    real = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f"{ft}/{'face_wide' if a.aspect == 'landscape' else 'face_full'}.mp4"], capture_output=True, text=True).stdout)
+    print(f"完成。footageEnd = {real:.2f}，faceX = {a.face_x / W:.4f}；{len(words)} 个字词。whisper 可能在结尾静音里编出重复的字，按最后一句真话截断。")

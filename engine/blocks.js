@@ -226,11 +226,11 @@
     const defs = make("defs", {});
     const clip = make("clipPath", { id: `${b.id}-reveal` }, defs);
     const clipRect = make("rect", { x: 0, y: 0, width: 0, height: 560 }, clip);
-    make("line", { x1: 50, y1: 480, x2: 650, y2: 480, stroke: "#e6e2d9", "stroke-width": 4 });
-    make("path", { d: `${b.path} L 650 480 L 50 480 Z`, fill: "#054c4c", opacity: 0.08, "clip-path": `url(#${b.id}-reveal)` });
-    const curve = make("path", { d: b.path, fill: "none", stroke: "#054c4c", "stroke-width": 8, "stroke-linecap": "round", "clip-path": `url(#${b.id}-reveal)` });
-    const halo = make("circle", { r: 24, fill: "#9cc2bf", opacity: 0 });
-    const tip = make("circle", { r: 10, fill: "#054c4c", opacity: 0 });
+    make("line", { x1: 50, y1: 480, x2: 650, y2: 480, style: "stroke:var(--well)", "stroke-width": 4 });
+    make("path", { d: `${b.path} L 650 480 L 50 480 Z`, style: "fill:var(--accent)", opacity: 0.1, "clip-path": `url(#${b.id}-reveal)` });
+    const curve = make("path", { d: b.path, style: "fill:none;stroke:var(--accent)", "stroke-width": 8, "stroke-linecap": "round", "clip-path": `url(#${b.id}-reveal)` });
+    const halo = make("circle", { r: 24, style: "fill:var(--accent)", opacity: 0 });
+    const tip = make("circle", { r: 10, style: "fill:var(--accent)", opacity: 0 });
     card.appendChild(svg);
     const total = curve.getTotalLength();
     const lengthAtX = (x) => {
@@ -247,7 +247,7 @@
     const marks = stops
       .filter((s) => s.mark)
       .map((s) => {
-        const dot = make("circle", { cx: s.pt.x, cy: s.pt.y, r: 14, fill: s.dark ? "#111" : "#054c4c", opacity: 0 });
+        const dot = make("circle", { cx: s.pt.x, cy: s.pt.y, r: 14, style: `fill:var(${s.dark ? "--ink" : "--accent"})`, opacity: 0 });
         dot.style.transformOrigin = `${s.pt.x}px ${s.pt.y}px`;
         const tag = s.tag ? el("div", `rs-tag${s.dark ? " is-dark" : ""}`, card, s.tag) : null;
         if (tag) {
@@ -278,7 +278,7 @@
         tip.setAttribute("opacity", on.toFixed(3));
         halo.setAttribute("cx", pt.x.toFixed(2));
         halo.setAttribute("cy", pt.y.toFixed(2));
-        halo.setAttribute("opacity", (0.5 * on).toFixed(3));
+        halo.setAttribute("opacity", (0.28 * on).toFixed(3));
         marks.forEach(({ s, dot, tag }) => {
           const u = t - s.at;
           dot.setAttribute("opacity", u > 0 ? 1 : 0);
@@ -312,7 +312,7 @@
           const on = prog(t, b.at + i * 0.006, b.at + 0.1 + i * 0.006);
           const off = i < miss ? ease.out3(prog(t, b.fade + (i / miss) * (b.land - b.fade), b.fade + (i / miss) * (b.land - b.fade) + 0.12)) : 0;
           d.style.opacity = (on * (1 - 0.82 * off)).toFixed(3);
-          d.style.background = i >= miss && t >= b.land ? "#054c4c" : "#111";
+          d.style.background = i >= miss && t >= b.land ? "var(--accent)" : "var(--ink)";
           const keep = i >= miss && t >= b.land ? 1 + 0.5 * Math.exp(-(t - b.land) * 7) * Math.cos((t - b.land) * 20) : 1;
           d.style.transform = `scale(${keep.toFixed(3)})`;
         });
@@ -322,6 +322,22 @@
         if (label) label.style.opacity = k > 0 ? clamp(k * 6) : 0;
         big.firstChild.textContent = String(Math.round(b.value * ease.out3(k)));
         big.style.transform = `scale(${(s > 0 ? 1 + 0.12 * Math.exp(-s * 10) * Math.cos(s * 24) : 1).toFixed(4)})`;
+      },
+    };
+  };
+
+  /* 口播页的白卡：一句判断逐字浮上来 */
+  RS.blocks.lower = (b, ctx) => {
+    const node = el("div", "rs-lower", ctx.stage);
+    const list = chars(node, b.text);
+    const end = b.to ?? b.at + list.length * 0.08;
+    return {
+      node,
+      parts: [node],
+      lands: [],
+      render(t) {
+        focusIn(node, t, b.at, { dur: 0.45, blur: 10, y: 16, scale: 0.98 });
+        list.forEach((c, i) => rise(c, t, b.at + ((end - b.at) * i) / Math.max(1, list.length - 1)));
       },
     };
   };
@@ -338,12 +354,24 @@
     if (b.video) inner.appendChild(media);
     else media.src = b.src;
     media.classList.add("rs-screen-media");
+    /* 长条截图写 fit: contain，四边留底色，不被裁掉；mark 的坐标都按画框算 */
+    if (b.fit) media.style.objectFit = b.fit;
+    if (b.matte) view.style.background = b.matte;
     const focus = (b.focus || []).slice().sort((x, y) => x.at - y.at);
     const labels = (b.labels || []).map((l) => {
       const n = el("div", `rs-screen-label${l.dark ? " is-dark" : ""}`, view, l.text);
       n.style.left = `${l.x}%`;
       n.style.top = `${l.y}%`;
       return { l, n };
+    });
+    /* mark 框在素材坐标上，跟着镜头一起动；说明文字不缩放，每帧按镜头算位置，贴在框的上下，不压内容 */
+    const marks = (b.marks || []).map((m) => {
+      const n = el("div", "rs-mark", inner);
+      n.style.cssText = `left:${m.x}%;top:${m.y}%;width:${m.w}%;height:${m.h}%`;
+      const dim = m.dim === false ? null : el("i", "rs-mark-dim", n);
+      const box = el("b", "rs-mark-box", n);
+      const tag = m.text ? el("div", "rs-mark-tag", view, m.text) : null;
+      return { m, n, dim, box, tag };
     });
     if (b.source) el("div", "rs-screen-src", node, b.source);
     const cam = (t) => {
@@ -360,15 +388,111 @@
       parts: [node],
       lands: focus.filter((f) => f.land).map((f) => ({ t: f.at + (f.dur ?? 0.6), weight: 0.8 })),
       render(t) {
-        focusIn(node, t, b.at, { dur: 0.6, blur: 18, y: 30, scale: 1.05 });
+        const toView = (v, origin, scale) => origin + (v - origin) * scale;
+        if (ctx.hardCut) {
+          node.style.opacity = t < b.at ? 0 : 1;
+        } else focusIn(node, t, b.at, { dur: 0.6, blur: 18, y: 30, scale: 1.05 });
         const c = cam(t);
         const drift = 1 + 0.03 * prog(t, b.at, b.exit ?? ctx.dur);
         inner.style.transformOrigin = `${c.x}% ${c.y}%`;
-        inner.style.transform = `scale(${(c.zoom * drift).toFixed(4)})`;
+        const scale = c.zoom * drift;
+        inner.style.transform = `scale(${scale.toFixed(4)})`;
+        marks.forEach(({ m, n, dim, box, tag }) => {
+          const off = m.to === undefined ? 1 : 1 - prog(t, m.to, m.to + 0.25);
+          const k = ease.out3(prog(t, m.at, m.at + 0.35));
+          n.style.opacity = t < m.at ? 0 : off;
+          box.style.clipPath = `inset(-8px ${(100 * (1 - k)).toFixed(2)}% -8px -8px)`;
+          if (dim) dim.style.opacity = k;
+          if (!tag) return;
+          const left = toView(m.x + m.w / 2, c.x, scale);
+          const top = toView(m.y, c.y, scale);
+          const bottom = toView(m.y + m.h, c.y, scale);
+          const below = bottom < 72;
+          const u = t - (m.at + 0.2);
+          tag.style.left = `${clamp(left, 16, 84).toFixed(2)}%`;
+          tag.style.top = `${clamp(below ? bottom + 2 : top - 2, 8, 84).toFixed(2)}%`;
+          tag.style.opacity = u <= 0 ? 0 : clamp(u / 0.15) * off;
+          tag.style.transform = `translate(-50%,${below ? "0" : "-100%"}) translateY(${(10 * (1 - ease.out3(clamp(u / 0.25)))).toFixed(2)}px)`;
+        });
         labels.forEach(({ l, n }) => {
           const u = t - l.at;
           n.style.opacity = u <= 0 ? 0 : clamp(u / 0.08);
           n.style.transform = `translate(-50%,-50%) scale(${(u <= 0 ? 0.7 : lerp(0.7, 1, spring(u, 18, 8))).toFixed(4)})`;
+        });
+      },
+    };
+  };
+
+  /* 单据画板：把「一条条、一张张」的手工活演出来。填表、逐个走过、某一项被标出来，都按台词 */
+  RS.blocks.sheet = (b, ctx) => {
+    const node = el("div", `rs-sheet is-${b.cards ? "cards" : "rows"}`, ctx.stage);
+    if (b.top !== undefined) node.style.top = `${b.top}px`;
+    const head = el("div", "rs-sheet-hd", node);
+    const heads = chars(head, b.head);
+    if (b.note) el("div", "rs-sheet-note", node, b.note);
+    const body = el("div", "rs-sheet-body", node);
+    const items = (b.cards || b.rows).map((it) => {
+      const n = el("div", "rs-sheet-item", body);
+      if (b.cards) {
+        el("div", "rs-sheet-title", n, it.title);
+        const value = el("div", "rs-sheet-value", n, it.value);
+        return { n, value };
+      }
+      const cells = el("div", "rs-sheet-cells", n);
+      it.cells.forEach((c) => el("span", "", cells, c));
+      const check = el("div", "rs-sheet-check", n, '<svg viewBox="0 0 24 24"><path d="M4 13l5 5L20 6" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+      return { n, cells, check };
+    });
+    const count = items.length;
+    const flags = (b.flags || []).map((f) => ({ ...f, n: el("div", "rs-sheet-flag", items[f.item].n, f.text) }));
+    const walks = b.walks || [];
+    const fill = b.fill || { from: b.at, to: b.at };
+    const fillAt = (i) => fill.from + ((fill.to - fill.from) * i) / Math.max(1, count - 1);
+    const bounce = ctx.motion?.bounce ?? 1;
+    return {
+      node,
+      parts: [node],
+      lands: flags.map((f) => ({ t: f.at, weight: 0.8 })),
+      render(t) {
+        focusIn(node, t, b.at, { dur: 0.5, blur: 12, y: 24, scale: 1.02 });
+        const headEnd = b.headTo ?? b.at + 0.4;
+        heads.forEach((c, i) => rise(c, t, b.at + ((headEnd - b.at) * i) / Math.max(1, heads.length - 1)));
+        const hit = flags.reduce((v, f) => (t >= f.at ? f.at : v), -1);
+        const s = hit < 0 ? 0 : t - hit;
+        node.style.translate = hit < 0 || !bounce ? "0 0" : `${(9 * bounce * Math.sin(s * 44) * Math.exp(-s * 8)).toFixed(2)}px 0`;
+        items.forEach((it, i) => {
+          const u = t - fillAt(i);
+          it.n.classList.toggle("is-empty", u <= 0);
+          const k = ease.out3(clamp(u / 0.22));
+          const inner = it.cells || it.n;
+          if (it.cells) {
+            inner.style.opacity = u <= 0 ? 0 : k;
+            inner.style.transform = `translateY(${(10 * (1 - k)).toFixed(2)}px)`;
+          } else {
+            it.n.style.opacity = u <= 0 ? 0.28 : lerp(0.28, 1, k);
+          }
+          let on = 0;
+          let done = false;
+          let shown = false;
+          for (const w of walks) {
+            const step = (w.to - w.from) / count;
+            const pos = w.reverse ? count - 1 - i : i;
+            const a = w.from + step * pos;
+            if (t >= a) {
+              if (w.tick) done = true;
+              if (w.reveal) shown = true;
+              if (t < a + step) on = 1;
+            }
+          }
+          it.n.classList.toggle("is-on", on === 1);
+          if (it.check) it.check.style.opacity = done ? 1 : 0;
+          if (it.value) it.value.style.opacity = !walks.some((w) => w.reveal) || shown ? 1 : 0;
+          it.n.classList.toggle("is-flag", flags.some((f) => f.item === i && t >= f.at));
+        });
+        flags.forEach((f, j) => {
+          const next = flags.slice(j + 1).find((g) => g.item === f.item);
+          const live = t >= f.at && (!next || t < next.at);
+          f.n.style.opacity = live ? ease.out3(prog(t, f.at, f.at + 0.15)) : 0;
         });
       },
     };

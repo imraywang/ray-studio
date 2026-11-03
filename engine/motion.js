@@ -13,7 +13,14 @@
     back: (k, s = 1.9) => 1 + (s + 1) * Math.pow(k - 1, 3) + s * Math.pow(k - 1, 2),
   };
   /* 欠阻尼弹簧：s 秒后的位置，从 0 到 1 */
-  const spring = (s, freq = 15, decay = 7.5) => (s <= 0 ? 0 : 1 - Math.exp(-decay * s) * Math.cos(freq * s));
+  /* style.bounce 决定回弹多少：0 就是干净的减速，没有过冲 */
+  const feel = { bounce: 1 };
+  const spring = (s, freq = 15, decay = 7.5) => {
+    if (s <= 0) return 0;
+    const springy = 1 - Math.exp(-decay * s) * Math.cos(freq * s);
+    const smooth = 1 - Math.exp(-decay * 1.3 * s);
+    return smooth + (springy - smooth) * feel.bounce;
+  };
   /* 冲击：某一刻挨一下之后的衰减振荡，两个轴频率不同，看起来不机械 */
   const SHOCK_LEN = 0.55;
   function shock(t, lands, amp = 6) {
@@ -275,6 +282,25 @@
     };
   }
 
+  /* 章节条：不参与呼吸，跨场景连续。进度按全片时间算，拼起来不会跳 */
+  function chapters(host, list, sceneStart) {
+    if (!list || !list.length) return () => {};
+    host.classList.add("rs-has-chapters");
+    const bar = el("div", "rs-chapters", host);
+    const items = list.map((c) => {
+      const n = el("div", "rs-chapter", bar, c.label);
+      return { ...c, n, fill: el("i", "", n) };
+    });
+    return (t) => {
+      const now = sceneStart + t;
+      items.forEach((c) => {
+        c.n.classList.toggle("is-on", now >= c.start && now < c.end);
+        c.n.classList.toggle("is-done", now >= c.end);
+        c.fill.style.transform = `scaleX(${prog(now, c.start, c.end).toFixed(4)})`;
+      });
+    };
+  }
+
   /* ---------- 呼吸层：手持晃动、缓慢推近、部件各自漂浮、落地后的余震与跟随 ---------- */
   function life(cam, parts, lands, dur, opt) {
     const SWAY = opt.sway ?? 3.2;
@@ -303,8 +329,11 @@
 
   /* 把声明好的场景拼起来，返回 render(t)。时间都已由 rs build 换算成场景内秒数 */
   function mount(host, scene) {
-    const cam = el("div", "rs-cam", host);
-    const ctx = { stage: cam, byId: {}, dur: scene.dur };
+    feel.bounce = scene.motion?.bounce ?? 1;
+    const frame = el("div", "rs-frame", host);
+    const cam = el("div", "rs-cam", frame);
+    const hardCut = scene.layout === "W";
+    const ctx = { stage: cam, byId: {}, dur: scene.dur, hardCut, motion: scene.motion };
     const made = [];
     const yields = [];
     for (const b of scene.beats) {
@@ -328,8 +357,10 @@
     }
     const lands = made.flatMap((m) => m.lands);
     const parts = made.flatMap((m) => m.parts);
-    const breathe = scene.life === false ? () => {} : life(cam, parts, lands, scene.dur, scene.lifeOptions || {});
+    const lifeOptions = { ...(scene.motion || {}), ...(scene.lifeOptions || {}) };
+    const breathe = scene.life === false || hardCut ? () => {} : life(cam, parts, lands, scene.dur, lifeOptions);
     const cap = captions(host, scene.captions || []);
+    const chapterBar = chapters(host, scene.chapters, scene.start);
     return (t) => {
       made.forEach((m) => m.render(t));
       const mods = {};
@@ -346,7 +377,7 @@
       made.forEach((m) => {
         if (!m.wrap) return;
         const mod = mods[m.spec.id] || {};
-        const exit = m.spec.exit === undefined ? 0 : ease.in3(prog(t, m.spec.exit, m.spec.exit + 0.38));
+        const exit = m.spec.exit === undefined ? 0 : hardCut ? (t >= m.spec.exit ? 1 : 0) : ease.in3(prog(t, m.spec.exit, m.spec.exit + 0.38));
         const filters = [];
         if (mod.gray) filters.push(`grayscale(${mod.gray.toFixed(3)})`);
         if (exit > 0.002) filters.push(`blur(${(18 * exit).toFixed(2)}px)`);
@@ -356,6 +387,7 @@
       });
       breathe(t);
       cap(t);
+      chapterBar(t);
     };
   }
 

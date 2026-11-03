@@ -5,20 +5,24 @@
 ```json
 {
   "title": "短名",
+  "style": "ali",
+  "aspect": "landscape",
   "words": "words.json",
   "footageEnd": 95.5,
   "bgmVolume": 0.3,
   "footage": { "pop": "...", "matte": "...", "full": "...", "voice": "...", "bgm": "...", "endStill": "...", "endHead": "..." },
+  "chapters": [{ "label": "痛点", "from": "hook" }],
   "captions": ["说实话", ["素材", "数彩"], [null, "这段不出字幕的原文"], "*第几层*"],
   "scenes": [{ "id": "hook", "layout": "S", "start": 0, "end": 5.2, "beats": [] }]
 }
 ```
 
-- **场景**首尾相接。`layout`：`S` 分屏（默认）、`A` 全屏真人（`punch` 写推近的词）、`F` 无真人。
+- **章节条**（可选）：`chapters` 写每一章从哪一场开始，顶部一直显示，进度按全片时间走。长片和分段清楚的片子用，一般 4–9 章。
+- **场景**首尾相接。`layout`：`S` 画板（默认）、`A` 全屏真人（`punch` 写推近的词）、`F` 无真人、`W` 全屏录屏（只有横屏，场景里只放 `screen`，之间硬切）。
 - **字幕**整条片子写一份，必须按顺序覆盖全部台词。`*词*` 标墨绿。
 - **时间**：字符串是这一场之后的台词，`"有人#2"` 第二次出现，`"款+0.14"` 带偏移；数字是场景内秒数。
 - **通用字段**：`id`、`at`、`exit`（退场）、`exitY`（退场位移，默认 -110，被划走用 -720）。
-- 画面区是 1080×960。标题占 y 74–160，字幕在 y 806 起，内容放 y 190–790。
+- 横屏和竖屏用同一套坐标：画面区都是 1080×960，横屏时放大 1.25 倍摆到左边或居中。标题占 y 74–160，字幕在 y 806 起，内容放 y 190–790。
 
 ## 对比和数字
 
@@ -39,6 +43,8 @@
 | `yield` | 讲过的退后但不撤 | `targets`（id 列表）、`at`、`dim`、`shrink` |
 
 ## 文字和举例
+
+`lower`：口播页下方的白卡，逐字浮上来。`text`、`at`、`to`，放在 `A` 版式里。
 
 `headline`：`text`、`accent`（要标墨绿的字）、`at`、`top`。最多 12 字。
 
@@ -61,9 +67,14 @@
 | 动作 | 什么时候用 | 字段 |
 |---|---|---|
 | `curve` | 情绪、张力、走势 | `path`（x 从 50 到 650 单调）、`route: [{ x, at, mark, tag, tagAt, land, dark }]` |
-| `screen` | 录屏或产品界面，要讲某一处 | `video` 或 `src`、`mediaStart`、`tab`、`source`、`at`、`exit`、`top`、`focus: [{ at, x, y, zoom, dur, land }]`（百分比坐标）、`labels: [{ at, x, y, text, dark }]` |
+| `screen` | 录屏或产品界面，要讲某一处 | `video` 或 `src`、`mediaStart`、`tab`、`source`、`at`、`exit`、`top`、`fit`、`matte`（长条截图写 `contain` 和底色）、`focus: [{ at, x, y, zoom, dur, land }]`（百分比坐标）、`marks`、`labels: [{ at, x, y, text, dark }]` |
+| `sheet` | 一条条、一张张的手工活，要演出来 | `head`、`headTo`（标题打完）、`at`、`exit`、`note`（虚构数据写「示意」）、`rows: [{ cells }]` 或 `cards: [{ title, value }]`、`fill: { from, to }`、`walks`、`flags` |
 | `figure` | 真实截图或照片，默认完整显示 | `src`、`fit`（要铺满写 `cover`）、`pos`、`source`、`at` |
 | `cta` | 导流 | `action`、`keyword`、`reward`、`at`、`kwAt`、`subAt` |
+
+`marks` 框住录屏的一行或一列，框外压暗，用在要讲具体内容的地方：`[{ at, to, x, y, w, h, text, dim }]`。坐标是占画框的百分比，先用 Read 打开截图量好；画框按 16:9，非 16:9 的素材用 `fit: "contain"` 再换算。`text` 自动贴在框的上方或下方，不用写位置。整行要看全时 `zoom` 不要超过 1.3。视频画面会滚动，`marks` 只用在截图或静止的片段上。
+
+`sheet` 的 `walks: [{ from, to, tick, reveal, reverse }]` 让高亮逐项走过：`tick` 打勾，`reveal` 走到才显示卡片的 `value`，`reverse` 往回走。`flags: [{ item, at, text }]` 把第几项标出来，同一项后面的会换掉前面的。金额和单据是虚构的就一定写 `note`。
 
 ## 自动带的
 

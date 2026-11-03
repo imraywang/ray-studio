@@ -1,0 +1,14 @@
+{
+ "name": "课程片",
+ "summary": "暖米白底，珊瑚色强调，白卡柔投影。动作只有淡入和上移，不回弹，适合课程和长视频。",
+ "tokens": {
+  "bg": "#f6f1ea", "bg-image": "radial-gradient(1500px 620px at 30% 118%, #ece4d8 0 60%, transparent 60.2%)",
+  "surface": "#ffffff", "ink": "#2b2622", "sub": "#7a6f66", "faint": "#bdb2a6", "well": "#ece4d8", "line": "rgba(70,48,30,.08)",
+  "accent": "#e0754b", "accent-text": "#b9552f", "accent-ink": "#ffffff", "shadow": "0 18px 48px rgba(70,48,30,.10), 0 2px 6px rgba(70,48,30,.06)",
+  "radius": "24px", "f-heavy": "HeiBold", "w-heavy": "700",
+  "cap-color": "#7a6f66", "cap-accent": "#7a6f66", "cap-bg": "transparent", "cap-pad": "0", "cap-size-l": "40px", "cap-weight": "700", "cap-a-color": "#ffffff", "cap-a-accent": "#ffffff", "cap-a-bg": "rgba(28,22,18,.52)", "cap-a-pad": "6px 18px"
+ },
+ "motion": { "bounce": 0, "shock": 0, "sway": 0, "rot": 0, "float": 1.2, "push": 0.04, "punch": 0.05 },
+ "person": "card",
+ "mix": { "bgm": 0.11, "sfx": 0.35, "lufs": -14, "only": ["click"] }
+}

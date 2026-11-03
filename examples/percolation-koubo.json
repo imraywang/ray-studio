@@ -1,5 +1,7 @@
 {
  "title": "percolation-test",
+ "style": "guandian",
+ "aspect": "portrait",
  "words": "words.json",
  "footage": {
   "pop": "assets/footage/face_pop.mp4",

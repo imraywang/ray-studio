@@ -1,5 +1,7 @@
 {
  "title": "topic-test",
+ "style": "guandian",
+ "aspect": "portrait",
  "words": "words.json",
  "footage": {
   "voice": "assets/footage/voice.wav"
