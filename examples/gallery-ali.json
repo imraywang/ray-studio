@@ -1,0 +1,117 @@
+{
+ "title": "al",
+ "style": "ali",
+ "aspect": "landscape",
+ "words": "words.json",
+ "footage": {
+  "wide": "assets/footage/face_wide.mp4",
+  "voice": "assets/footage/voice.wav"
+ },
+ "footageEnd": 140.37,
+ "faceX": 0.4875,
+ "captions": [],
+ "scenes": [
+  {
+   "id": "pad",
+   "layout": "S",
+   "start": 0,
+   "end": 26.3,
+   "beats": []
+  },
+  {
+   "id": "behind",
+   "layout": "A",
+   "matte": "assets/footage/matte-26.3.webm",
+   "beats": [
+    {
+     "id": "b",
+     "do": "behind",
+     "at": 0.3,
+     "size": 340,
+     "items": [
+      {
+       "text": "一",
+       "x": 180,
+       "y": 220
+      },
+      {
+       "text": "句",
+       "x": 780,
+       "y": 220,
+       "at": 0.7
+      }
+     ]
+    }
+   ],
+   "start": 26.3,
+   "end": 31.7
+  },
+  {
+   "id": "path",
+   "layout": "S",
+   "beats": [
+    {
+     "id": "t",
+     "do": "headline",
+     "text": "四步路线图",
+     "accent": "四步",
+     "at": 0.1
+    },
+    {
+     "id": "p",
+     "do": "path",
+     "at": 0.1,
+     "nodes": [
+      {
+       "label": "写稿",
+       "at": 0.2
+      },
+      {
+       "label": "配音",
+       "at": 0.8
+      },
+      {
+       "label": "剪辑",
+       "at": 1.4
+      },
+      {
+       "label": "发布",
+       "at": 2
+      }
+     ]
+    }
+   ],
+   "start": 31.7,
+   "end": 35.7
+  },
+  {
+   "id": "pills",
+   "layout": "A",
+   "beats": [
+    {
+     "id": "p",
+     "do": "pills",
+     "items": [
+      {
+       "text": "不用剪映",
+       "kind": "no",
+       "at": 0.2
+      },
+      {
+       "text": "不学代码",
+       "kind": "no",
+       "at": 0.6
+      },
+      {
+       "text": "一句话就行",
+       "kind": "ok",
+       "at": 1
+      }
+     ]
+    }
+   ],
+   "start": 35.7,
+   "end": 39.7
+  }
+ ]
+}

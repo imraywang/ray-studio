@@ -49,6 +49,7 @@
     c.style.transform = `translateY(${(14 * (1 - k)).toFixed(2)}px)`;
     c.style.filter = blurOf(6 * (1 - k));
   };
+  RS.kit = { el, focusIn, popIn, rise, chars };
 
   /* 层级开场：梯子亮起这一层，镜头扎进这一格；左边留一架小梯子当进度条 */
   RS.blocks.levelIntro = (b, ctx) => {
@@ -344,8 +345,9 @@
 
   /* 真实录屏：放进带窗口栏的画框。focus 让镜头推到一处，label 贴一句人话。视频元素由 rs 静态写进场景 */
   RS.blocks.screen = (b, ctx) => {
-    const node = el("div", `rs-screen${b.wide === false ? "" : " is-wide"}`, ctx.stage);
+    const node = el("div", `rs-screen${b.wide === false ? "" : " is-wide"}${b.paper ? " is-paper" : ""}`, ctx.stage);
     if (b.top !== undefined) node.style.top = `${b.top}px`;
+    if (b.above) el("div", "rs-screen-above", node, b.above);
     const bar = el("div", "rs-screen-bar", node, "<i></i><i></i><i></i>");
     if (b.tab) el("span", "", bar, b.tab);
     const view = el("div", "rs-screen-view", node);
@@ -366,9 +368,9 @@
     });
     /* mark 框在素材坐标上，跟着镜头一起动；说明文字不缩放，每帧按镜头算位置，贴在框的上下，不压内容 */
     const marks = (b.marks || []).map((m) => {
-      const n = el("div", "rs-mark", inner);
+      const n = el("div", `rs-mark${m.pen ? " is-pen" : ""}`, inner);
       n.style.cssText = `left:${m.x}%;top:${m.y}%;width:${m.w}%;height:${m.h}%`;
-      const dim = m.dim === false ? null : el("i", "rs-mark-dim", n);
+      const dim = m.dim === false || m.pen ? null : el("i", "rs-mark-dim", n);
       const box = el("b", "rs-mark-box", n);
       const tag = m.text ? el("div", "rs-mark-tag", view, m.text) : null;
       return { m, n, dim, box, tag };

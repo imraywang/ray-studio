@@ -18,7 +18,8 @@
 ```
 
 - **章节条**（可选）：`chapters` 写每一章从哪一场开始，顶部一直显示，进度按全片时间走。长片和分段清楚的片子用，一般 4–9 章。
-- **场景**首尾相接。`layout`：`S` 画板（默认）、`A` 全屏真人（`punch` 写推近的词）、`F` 无真人、`W` 全屏录屏（只有横屏，场景里只放 `screen`，之间硬切）。
+- **场景**首尾相接。`layout`：`S` 画板（默认）、`A` 全屏真人（`punch` 写推近的词）、`F` 无真人、`W` 全屏（录屏、新闻、整屏卡片，之间硬切；横屏带角落小窗，`"person": false` 不要小窗）。
+- **人身后的字**：场景写 `"matte": "assets/footage/matte-26.3.webm"`，由 `scripts/matte.py` 生成，只用在 `A` 版式。
 - **字幕**整条片子写一份，必须按顺序覆盖全部台词。`*词*` 标墨绿。
 - **时间**：字符串是这一场之后的台词，`"有人#2"` 第二次出现，`"款+0.14"` 带偏移；数字是场景内秒数。
 - **通用字段**：`id`、`at`、`exit`（退场）、`exitY`（退场位移，默认 -110，被划走用 -720）。
@@ -75,6 +76,41 @@
 `marks` 框住录屏的一行或一列，框外压暗，用在要讲具体内容的地方：`[{ at, to, x, y, w, h, text, dim }]`。坐标是占画框的百分比，先用 Read 打开截图量好；画框按 16:9，非 16:9 的素材用 `fit: "contain"` 再换算。`text` 自动贴在框的上方或下方，不用写位置。整行要看全时 `zoom` 不要超过 1.3。视频画面会滚动，`marks` 只用在截图或静止的片段上。
 
 `sheet` 的 `walks: [{ from, to, tick, reveal, reverse }]` 让高亮逐项走过：`tick` 打勾，`reveal` 走到才显示卡片的 `value`，`reverse` 往回走。`flags: [{ item, at, text }]` 把第几项标出来，同一项后面的会换掉前面的。金额和单据是虚构的就一定写 `note`。
+
+## 风格库迁来的动作
+
+尺寸都按画板区设计，`W` 版式自动放大。除 `behind`、`pills`、`name`、`numcard`、`logos` 有固定位置外，都在画面中央。
+
+| 动作 | 什么时候用 | 字段 |
+|---|---|---|
+| `news` | 新闻画面快切，上面的字不动。平均 2–3 秒一个 | `clips: [{ video 或 src, at, source, dim, mediaStart, pos }]`，放在 `W` 版式，其他动作写在它后面才在上层 |
+| `silver` | 章节开头、关键数字 | `text`、`kicker`、`en`、`at`、`dim`（压暗底下的画面） |
+| `big` | 一句结论 | `text`（`*词*` 标重点）或 `sides: [左, 右]`、`kicker`、`size`、`gap`、`at`、`dim`、`onFace` |
+| `brush` | 对立的两个词、结尾问句 | `text` 或 `sides`、`at`、`dim` |
+| `highlight` | 问句里的关键词，荧光笔刷出来 | `text`、`hlAt`、`at`、`dim` |
+| `shrink` | 基本归零 | `label`、`value`、`pct`、`at`、`land` |
+| `pie` | 大比例。很小的比例用 `tally` | `value`、`label`、`digits`、`dur`、`at` |
+| `stat` | 一个巨大的数字 | `value`、`unit`（在右下角）、`prefix`、`digits`、`key`、`note`、`bare`、`size`、`at`、`countAt`、`land` |
+| `chart` | 股价和走势，真实数据 | `csv`（第一列日期、最后一列数值）或 `points`；`labels: [{ date 或 i, text, dy }]`、`line: { value, text }`、`segments: [{ at, dur, upto 或 date }]`、`title`、`min`、`max`、`at`。不实时显示数值 |
+| `money` | 钱从一处流到另一处 | `a`、`b`（百分比坐标，没有 `b` 就是一张大钞）、`count`、`stagger`、`dur`、`sign`、`at` |
+| `metro` | 每章开头，走到第几站 | `stations`、`cur`（等于站数时全线点亮）、`barrier: [i, j]`、`kicker`、`title`、`sign`、`at` |
+| `bubbles` | 几步流程，讲到哪个亮哪个 | `items: [{ text, at, tag: [说明, 数字] }]`、`allAt` |
+| `path` | 流程、路线图，一期里反复用当进度 | `nodes: [{ label, at, showAt }]`、`at` |
+| `pills` | 口播页上的列举 | `items: [{ text, kind: "ok"/"no", at }]`、`left`、`top` |
+| `behind` | 开场关键词放在人身后 | `items: [{ text, x, y, size, at }]`、`size`、`at`。放头两侧，中间那个字一定被挡住 |
+| `term` | 名词字卡，整屏 | `text`（放原词）、`zh`、`at` |
+| `bars` | 几个数字比大小 | `items: [{ label, value, text, hit, at }]`、`max` |
+| `percolate` | 贯穿全片的网格示意 | `cols`、`rows`、`seed`、`gas`、`showP`、`start`、`phases: [{ at, to, p }]`（`p` 可写 `"critical"`、`"critical-0.01"`）、`swellAt`、`at` |
+| `numcard` | 清单每项开头 | `n`、`name`、`top`（压在衣服上，看脸的位置调）、`at` |
+| `logos` | 一排 logo 弹出 | `items: [{ src, label, at }]`、`top` |
+| `thread` | 收尾把几项串起来 | `items: [{ src, word, at }]`、`at` |
+| `quote` | 媒体报道 | `bg`、`media`、`text`（`*词*` 反白）、`note`、`at` |
+| `tweet` | 推文截图加译文 | `src`、`text`、`textAt`、`at` |
+| `name` | 新人物出场 | `en`、`zh`、`nick`、`img`、`left`、`top`、`at` |
+| `ruler` | 历史段落 | `years: [起, 止]`、`step`、`stops: [{ year, at }]`、`at` |
+| `track` | 规则的时间限制 | `label`、`pct`、`pins: [{ pct, text, at }]`、`fill`、`dur`、`at` |
+
+`screen` 还有两种写法：`"paper": true` 是木桌上的原文纸面，配 `marks` 里的 `"pen": true` 做荧光高亮；`"above": "obsidian.md"` 是清单片截图卡上方的出处行。
 
 ## 自动带的
 

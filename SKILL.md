@@ -1,6 +1,6 @@
 ---
 name: ray-studio
-description: 给一条录好的口播或一个主题，做出动效精美、风格和横竖屏可选的视频：Agent 写声明文件、自己看关键帧、只重渲改过的场景。用于“用 ray-studio 做”“这条口播做成动效片”“给这个主题做个动效视频”。其他风格库转 ray-explainer；只写稿转 ray-kb / ray-kepu；封面转 ray-cover。不发布。
+description: 给一条录好的口播或一个主题，做出动效精美、风格和横竖屏可选的视频：Agent 写声明文件、自己看关键帧、只重渲改过的场景。用于“用 ray-studio 做”“这条口播做成动效片”“给这个主题做个动效视频”。只写稿转 ray-kb / ray-kepu；封面转 ray-cover。不发布。
 ---
 
 # Ray Studio
@@ -91,7 +91,7 @@ node $RS/bin/rs.mjs frames <工程> [场景]
 ```bash
 node $RS/bin/rs.mjs render <工程> [场景...]    # 试看，只重渲改过的场景
 node $RS/bin/rs.mjs final <工程>               # 交付：画面按帧拼接，整条音频单独混
-python3 ~/.claude/skills/ray-explainer/scripts/qa_video.py --lufs -16 --out <工程>/renders/qa.json <成片>
+node $RS/bin/rs.mjs qa <工程>                   # 按风格的响度量成片，导出切点图
 ```
 
 `final` 提示帧数对不上就是有问题，不要交。
@@ -110,11 +110,20 @@ Ray 说「0:30 太快」「第 3 层太空」：从时间点找到场景，只�
 |---|---|
 | `guandian` | 框架和观点口播，动作弹、有重量 |
 | `ali` | 课程和长视频，只淡入和上移，配乐很轻 |
-| `xiaolin` | 新闻和数据科普，深色底 |
+| `xiaolin` | 公司、资本、时事科普，深色底新闻快切，配数字卡、走势线、地铁图。真实新闻画面占一半以上 |
+| `fenping` | 竖屏观点和科普口播：上画面下真人，字幕是接缝上的黑胶囊，讲人物和名词时整屏 |
+| `qingdan` | 第一个、第二个的清单口播：编号卡、截图卡、探头真人，字幕一次一个词 |
 
 版式：`S` 画板、`A` 全屏真人、`F` 无真人、`W` 全屏录屏加角落小窗（只有横屏）。竖屏的 `F` 版式画面偏空，主题片要多放真实截图和录屏，交片时提醒 Ray。
 
-旧风格的独有组件（`ali` 的人身后大字、节点路径，`xiaolin` 的地铁线路图、饼图、银色标题）和 `fenping`、`qingdan` 还没迁过来。Ray 点名这些时转 `ray-explainer`。
+每种风格的做法和常用动作：
+
+- `ali`：列举用 `pills`，流程用 `path`，开场关键词用 `behind`。转场全部硬切，单个画板页 5–20 秒。
+- `xiaolin`：`W` 版式的 `news` 打底，上面叠 `silver`、`big`、`stat`；图表用 `pie`、`chart`、`shrink`，钱用 `money`，每章开头用 `metro`，原文用 `screen` 的 `paper`。不用盖章。
+- `fenping`：讲数字用 `S`，讲人物和名词用 `W` 整屏（`figure` 配 `name`、`term`），不用分屏，字卡会挡嘴。画面上不写字幕已经说的完整中文，只放出处、原词、数字和图形。
+- `qingdan`：每项开头是 `A` 版式的 `numcard`，说明用 `S` 版式的 `screen` 配 `above`，收尾用 `thread` 和 `cta`。
+
+没有迁的：盖章（Ray 10-25 不要了）、AI 画的漫画人物卡（要花钱，涉及肖像）。
 
 ## 边界
 

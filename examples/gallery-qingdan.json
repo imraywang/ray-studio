@@ -1,0 +1,97 @@
+{
+ "title": "qd",
+ "style": "qingdan",
+ "aspect": "portrait",
+ "words": "words.json",
+ "footage": {
+  "pop": "assets/footage/face_pop.mp4",
+  "matte": "assets/footage/face_pop_matte.webm",
+  "full": "assets/footage/face_full.mp4",
+  "voice": "assets/footage/voice.wav"
+ },
+ "footageEnd": null,
+ "faceX": null,
+ "captions": [],
+ "scenes": [
+  {
+   "id": "card",
+   "layout": "S",
+   "beats": [
+    {
+     "id": "s",
+     "do": "screen",
+     "src": "assets/img/end_head.png",
+     "above": "obsidian.md",
+     "at": 0.1
+    }
+   ],
+   "start": 0,
+   "end": 4
+  },
+  {
+   "id": "num",
+   "layout": "A",
+   "beats": [
+    {
+     "id": "n",
+     "do": "numcard",
+     "n": 1,
+     "name": "Obsidian",
+     "at": 0.1
+    }
+   ],
+   "start": 4,
+   "end": 8
+  },
+  {
+   "id": "hook",
+   "layout": "S",
+   "beats": [
+    {
+     "id": "h",
+     "do": "headline",
+     "text": "每天离不开的",
+     "at": 0.1
+    },
+    {
+     "id": "s",
+     "do": "stat",
+     "bare": true,
+     "value": 4,
+     "unit": "个",
+     "at": 0.2,
+     "land": 0.9
+    }
+   ],
+   "start": 8,
+   "end": 12
+  },
+  {
+   "id": "thread",
+   "layout": "S",
+   "beats": [
+    {
+     "id": "t",
+     "do": "thread",
+     "at": 0.1,
+     "items": [
+      {
+       "word": "记",
+       "at": 0.3
+      },
+      {
+       "word": "想",
+       "at": 0.8
+      },
+      {
+       "word": "做",
+       "at": 1.3
+      }
+     ]
+    }
+   ],
+   "start": 12,
+   "end": 16
+  }
+ ]
+}

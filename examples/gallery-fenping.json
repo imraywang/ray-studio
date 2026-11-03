@@ -1,0 +1,161 @@
+{
+ "title": "fp",
+ "style": "fenping",
+ "aspect": "portrait",
+ "words": "words.json",
+ "footage": {
+  "pop": "assets/footage/face_pop.mp4",
+  "matte": "assets/footage/face_pop_matte.webm",
+  "full": "assets/footage/face_full.mp4",
+  "voice": "assets/footage/voice.wav"
+ },
+ "footageEnd": null,
+ "faceX": null,
+ "captions": [],
+ "scenes": [
+  {
+   "id": "split",
+   "layout": "S",
+   "beats": [
+    {
+     "id": "b",
+     "do": "bars",
+     "items": [
+      {
+       "label": "前半年",
+       "value": 5,
+       "text": "5%",
+       "at": 0.1
+      },
+      {
+       "label": "一年后",
+       "value": 40,
+       "text": "40%",
+       "at": 0.5,
+       "hit": true
+      }
+     ]
+    }
+   ],
+   "start": 0,
+   "end": 4
+  },
+  {
+   "id": "term",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "t",
+     "do": "term",
+     "text": "percolation",
+     "zh": "渗流",
+     "at": 0.1
+    }
+   ],
+   "start": 4,
+   "end": 8
+  },
+  {
+   "id": "perc",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "g",
+     "do": "percolate",
+     "cols": 12,
+     "rows": 14,
+     "seed": 96,
+     "gas": true,
+     "showP": true,
+     "at": 0.1,
+     "start": 0.2,
+     "phases": [
+      {
+       "at": 0.3,
+       "to": 1.5,
+       "p": "critical-0.01"
+      },
+      {
+       "at": 2,
+       "to": 2.4,
+       "p": "critical+0.01"
+      }
+     ]
+    }
+   ],
+   "start": 8,
+   "end": 11
+  },
+  {
+   "id": "a",
+   "layout": "A",
+   "beats": [
+    {
+     "id": "n",
+     "do": "name",
+     "en": "Paul David",
+     "zh": "经济史学家 · 1990",
+     "at": 0.2
+    }
+   ],
+   "start": 11,
+   "end": 15
+  },
+  {
+   "id": "metro",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "m",
+     "do": "metro",
+     "title": "电气化",
+     "stations": [
+      "1880",
+      "1900",
+      "1920"
+     ],
+     "cur": 1,
+     "at": 0.1
+    }
+   ],
+   "start": 15,
+   "end": 19
+  },
+  {
+   "id": "chart",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "c",
+     "do": "chart",
+     "points": [
+      100,
+      120,
+      115,
+      180,
+      260,
+      240,
+      380,
+      520,
+      470,
+      600,
+      560,
+      420,
+      380,
+      300,
+      320,
+      280,
+      260
+     ],
+     "at": 0.1
+    }
+   ],
+   "start": 19,
+   "end": 23
+  }
+ ]
+}

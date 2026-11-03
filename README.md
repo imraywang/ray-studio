@@ -2,7 +2,7 @@
 
 给一条口播或一个主题，做出动效精美的视频，风格和横竖屏都可选。没有编辑台：Agent 改声明文件，自己看关键帧，只重渲改过的场景。
 
-作为 skill 使用：把仓库链到 `~/.claude/skills/ray-studio`，流程见 [SKILL.md](SKILL.md)，全部动作见 [动作词汇](references/vocabulary.md)。依赖 Node、ffmpeg、`hyperframes`、`mlx_whisper`；配音和成片检查目前借用 `ray-explainer` 的脚本。
+作为 skill 使用：把仓库链到 `~/.claude/skills/ray-studio`，流程见 [SKILL.md](SKILL.md)，全部动作见 [动作词汇](references/vocabulary.md)。依赖 Node、ffmpeg、`hyperframes`、`mlx_whisper`，成片检查要 numpy。配音用 MiniMax，音色表在 `~/.config/ray-explainer/voices.json`。
 
 ## 用法
 
@@ -13,6 +13,7 @@ node bin/rs.mjs check  <工程目录>            # 检查台词能否对上、�
 node bin/rs.mjs frames <工程目录> [场景]     # 抽关键帧拼成一张图
 node bin/rs.mjs render <工程目录> [场景...]  # 只重渲改过的场景，再拼起来试看
 node bin/rs.mjs final  <工程目录>            # 画面按帧拼接，整条音频单独混，统一响度
+node bin/rs.mjs qa     <工程目录>            # 量响度、峰值、黑场、空画面，导出切点图
 ```
 
 工程目录放 `studio.json`、逐字时间轴 `words.json` 和 `assets/`。素材不进这个仓库。示例见 `examples/`。
@@ -41,11 +42,13 @@ node bin/rs.mjs final  <工程目录>            # 画面按帧拼接，整条�
 | `figure` | 真实截图或照片 | 虚焦进场，整段缓慢推近，带来源 |
 | `cta` | 导流 | 墨绿卡说动作，巨号关键词砸下来，小字说换来什么 |
 
-声明文件要写 `"style"` 和 `"aspect"`（`portrait` 或 `landscape`）。风格在 `styles/*.json`，定义颜色、字体、动作性格、人像放法和混音；动作只有一份。试看别的风格不用改文件：`rs frames <工程> <场景> --style xiaolin`。
+声明文件要写 `"style"` 和 `"aspect"`（`portrait` 或 `landscape`）。风格有 `guandian`、`ali`、`xiaolin`、`fenping`、`qingdan`，在 `styles/*.json`，定义颜色、字体、动作性格、人像放法和混音；动作只有一份。试看别的风格不用改文件：`rs frames <工程> <场景> --style xiaolin`。
 
 长片可以写 `chapters`，顶部显示章节和进度。
 
-版式：`S` 画板（竖屏时上画面下探头，横屏时左画面右人像）、`A` 全屏真人（`punch` 写在哪个词上推近）、`F` 无真人、`W` 全屏录屏加角落小窗（只有横屏）。
+还有新闻快切、银色标题、大字、书法字、荧光笔、饼图、走势线、纸钞、地铁图、玻璃气泡、节点路径、人身后大字、名词卡、渗流网格、编号卡等，共 40 多个动作，全部字段见[动作词汇](references/vocabulary.md)。
+
+版式：`S` 画板（竖屏时上画面下真人，横屏时左画面右人像）、`A` 全屏真人（`punch` 写在哪个词上推近）、`F` 无真人、`W` 全屏（录屏、新闻、整屏卡片）。
 
 每个场景默认带呼吸层：手持晃动、缓慢推近、部件各自漂浮、落地余震和跟随。字幕不参与，要稳。落地和裁决的音效由动作自动带出。
 

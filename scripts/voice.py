@@ -14,7 +14,7 @@ ap.add_argument("--voice", default="ray")
 ap.add_argument("--speed", type=float, default=1.0)
 ap.add_argument("--redo", action="store_true", help="重新配音。默认已有 voice.wav 就只重新转写，不再花钱")
 a = ap.parse_args()
-sys.path.insert(0, os.path.expanduser("~/.claude/skills/ray-explainer/scripts"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import minimax_api
 
 voices = json.load(open(os.path.expanduser("~/.config/ray-explainer/voices.json")))

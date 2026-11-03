@@ -1,0 +1,472 @@
+{
+ "title": "xl",
+ "style": "xiaolin",
+ "aspect": "landscape",
+ "words": "words.json",
+ "footage": {
+  "wide": "assets/footage/face_wide.mp4",
+  "voice": "assets/footage/voice.wav"
+ },
+ "footageEnd": 140.37,
+ "faceX": 0.4875,
+ "captions": [],
+ "scenes": [
+  {
+   "id": "news",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "src": "assets/img/s_52.jpg",
+       "at": 0,
+       "source": "来源 · 2026-10-20"
+      },
+      {
+       "video": "assets/footage/clips/s05a.mp4",
+       "at": 1.5,
+       "source": "来源 · 新闻"
+      },
+      {
+       "src": "assets/img/z_list.jpg",
+       "at": 3,
+       "dim": 0.4
+      }
+     ]
+    },
+    {
+     "id": "t",
+     "do": "silver",
+     "kicker": "第一章",
+     "text": "特朗普账户",
+     "en": "trump accounts",
+     "dim": true,
+     "at": 0.3
+    }
+   ],
+   "start": 0,
+   "end": 4
+  },
+  {
+   "id": "big",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "b",
+     "do": "big",
+     "kicker": "答案是",
+     "text": "股市？",
+     "at": 0.2
+    }
+   ],
+   "start": 4,
+   "end": 8
+  },
+  {
+   "id": "sides",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "b",
+     "do": "big",
+     "sides": [
+      "卡在",
+      "这里"
+     ],
+     "at": 0.2
+    }
+   ],
+   "start": 8,
+   "end": 12
+  },
+  {
+   "id": "hl",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "h",
+     "do": "highlight",
+     "text": "这会不会是*另一种泡沫*？",
+     "at": 0.1,
+     "hlAt": 0.7
+    }
+   ],
+   "start": 12,
+   "end": 16
+  },
+  {
+   "id": "shrink",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "z",
+     "do": "shrink",
+     "label": "账面价值",
+     "value": "基本归零",
+     "at": 0.1,
+     "land": 0.8
+    }
+   ],
+   "start": 16,
+   "end": 20
+  },
+  {
+   "id": "pie",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "p",
+     "do": "pie",
+     "value": 96,
+     "label": "*九成以上*来自海外",
+     "at": 0.1
+    }
+   ],
+   "start": 20,
+   "end": 24
+  },
+  {
+   "id": "stat",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "s",
+     "do": "stat",
+     "key": "累计投入",
+     "value": 7200,
+     "unit": "亿美元",
+     "note": "公司财报 2026",
+     "at": 0.1,
+     "land": 1
+    }
+   ],
+   "start": 24,
+   "end": 28
+  },
+  {
+   "id": "chart",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "c",
+     "do": "chart",
+     "title": "股价走势（示意）",
+     "points": [
+      100,
+      120,
+      115,
+      180,
+      260,
+      240,
+      380,
+      520,
+      470,
+      600,
+      560,
+      420,
+      380,
+      300,
+      320,
+      280,
+      260
+     ],
+     "line": {
+      "value": 116,
+      "text": "发行价 116"
+     },
+     "labels": [
+      {
+       "i": 9,
+       "text": "盘中最高 600",
+       "dy": -48
+      },
+      {
+       "i": 16,
+       "text": "现在 260",
+       "dy": -48
+      }
+     ],
+     "at": 0.1,
+     "segments": [
+      {
+       "at": 0.2,
+       "upto": 9,
+       "dur": 1.2
+      },
+      {
+       "at": 1.6,
+       "upto": 16,
+       "dur": 1.2
+      }
+     ]
+    }
+   ],
+   "start": 28,
+   "end": 32
+  },
+  {
+   "id": "money",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "bg",
+     "do": "bubbles",
+     "items": [
+      {
+       "text": "用户",
+       "at": 0.1
+      },
+      {
+       "text": "*大模型*公司",
+       "at": 0.6
+      },
+      {
+       "text": "云厂商",
+       "at": 1.1,
+       "tag": [
+        "付给",
+        "¥ 2.4 亿"
+       ]
+      }
+     ],
+     "allAt": 3
+    }
+   ],
+   "start": 32,
+   "end": 36
+  },
+  {
+   "id": "flow",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "m",
+     "do": "money",
+     "a": [
+      15,
+      40
+     ],
+     "b": [
+      85,
+      40
+     ],
+     "at": 0.2,
+     "count": 6
+    },
+    {
+     "id": "n",
+     "do": "money",
+     "a": [
+      50,
+      70
+     ],
+     "at": 1.6
+    }
+   ],
+   "start": 36,
+   "end": 40
+  },
+  {
+   "id": "metro",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "m",
+     "do": "metro",
+     "kicker": "第 4 站",
+     "title": "算力",
+     "stations": [
+      "用户",
+      "应用",
+      "模型",
+      "算力",
+      "电力",
+      "芯片",
+      "资本"
+     ],
+     "cur": 3,
+     "barrier": [
+      4,
+      5
+     ],
+     "at": 0.1
+    }
+   ],
+   "start": 40,
+   "end": 44
+  },
+  {
+   "id": "quote",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "q",
+     "do": "quote",
+     "bg": "assets/img/z_list.jpg",
+     "media": "CNBC",
+     "text": "这项规定意味着*每个孩子*都将拥有一股。",
+     "note": "中文为译文",
+     "at": 0.1
+    }
+   ],
+   "start": 44,
+   "end": 48
+  },
+  {
+   "id": "tweet",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "t",
+     "do": "tweet",
+     "src": "assets/img/h_jd.jpg",
+     "text": "我们会*逐条核对*，不做猜测。",
+     "at": 0.1
+    }
+   ],
+   "start": 48,
+   "end": 52
+  },
+  {
+   "id": "brush",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "b",
+     "do": "brush",
+     "sides": [
+      "慈善",
+      "收买"
+     ],
+     "at": 0.1
+    }
+   ],
+   "start": 52,
+   "end": 56
+  },
+  {
+   "id": "ruler",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "n",
+     "do": "name",
+     "en": "Elon Musk",
+     "zh": "SpaceX 创始人",
+     "nick": "马斯克",
+     "at": 0.2
+    },
+    {
+     "id": "r",
+     "do": "ruler",
+     "years": [
+      1990,
+      2030
+     ],
+     "stops": [
+      {
+       "year": 2002,
+       "at": 0.1
+      },
+      {
+       "year": 2026,
+       "at": 1.2
+      }
+     ],
+     "at": 0.1
+    }
+   ],
+   "start": 56,
+   "end": 60
+  },
+  {
+   "id": "track",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "t",
+     "do": "track",
+     "label": "锁定期",
+     "pct": 70,
+     "pins": [
+      {
+       "pct": 30,
+       "text": "18 岁",
+       "at": 0.8
+      },
+      {
+       "pct": 70,
+       "text": "25 岁",
+       "at": 1.2
+      }
+     ],
+     "at": 0.1
+    }
+   ],
+   "start": 60,
+   "end": 64
+  },
+  {
+   "id": "paper",
+   "layout": "W",
+   "person": false,
+   "beats": [
+    {
+     "id": "p",
+     "do": "screen",
+     "paper": true,
+     "src": "assets/img/s_table.jpg",
+     "at": 0.1,
+     "focus": [
+      {
+       "at": 0.6,
+       "x": 50,
+       "y": 35,
+       "zoom": 1.3
+      }
+     ],
+     "marks": [
+      {
+       "at": 0.8,
+       "x": 14.4,
+       "y": 30.6,
+       "w": 75,
+       "h": 6.8,
+       "pen": true
+      }
+     ]
+    }
+   ],
+   "start": 64,
+   "end": 68
+  }
+ ],
+ "chapters": [
+  {
+   "label": "新闻",
+   "from": "news"
+  },
+  {
+   "label": "图表",
+   "from": "pie"
+  }
+ ]
+}

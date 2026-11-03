@@ -6,6 +6,7 @@
 //   rs frames <工程> [场景...]          抽关键帧拼成一张图，给 Agent 自己看
 //   rs render <工程> [场景...] [-q looks|delivery]  只重渲改过的场景，再拼起来试看
 //   rs final  <工程> [-q delivery]      各场景画面按帧拼接，整条音频单独混，响度统一
+//   rs qa     <工程>                    量成片：响度、峰值、黑场、空画面，导出切点图
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -14,10 +15,11 @@ import { fileURLToPath } from "node:url";
 
 const ENGINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../engine");
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const ENGINE_JS = ["motion.js", "blocks.js"];
+const ENGINE_JS = ["motion.js", "blocks.js", "extras.js"];
+const ENGINE_CSS = ["motion.css", "extras.css"];
 const HF = process.env.RS_HYPERFRAMES || "hyperframes";
 const FPS = 30;
-const LAYOUTS = { portrait: ["S", "A", "F"], landscape: ["S", "A", "F", "W"] };
+const LAYOUTS = { portrait: ["S", "A", "F", "W"], landscape: ["S", "A", "F", "W"] };
 const SIZE = { portrait: [1080, 1920], landscape: [1920, 1080] };
 const SFX_LEN = { click: 0.05, ding: 0.7, whoosh: 0.7, swell: 1.2 };
 
@@ -44,13 +46,13 @@ const strip = (s) => s.replace(/[\s,，。.!！?？、:：;；"'“”*]/g, "");
 function indexWords(words) {
   let text = "";
   const at = [];
-  for (const w of words) {
+  words.forEach((w, word) => {
     const clean = strip(w.text);
     [...clean].forEach((c, i) => {
       text += c;
-      at.push({ start: w.start + ((w.end - w.start) * i) / clean.length, end: w.start + ((w.end - w.start) * (i + 1)) / clean.length });
+      at.push({ word, start: w.start + ((w.end - w.start) * i) / clean.length, end: w.start + ((w.end - w.start) * (i + 1)) / clean.length });
     });
-  }
+  });
   return { text, at };
 }
 
@@ -71,7 +73,7 @@ function timeOf(ref, idx, from, errors, where) {
 }
 
 // 全片字幕只写一份，按顺序对到逐字时间轴，再分到各场。[显示, 听写原文] 纠错字；显示写 null 表示这段不出字幕
-function alignCaptions(list, idx, errors) {
+function alignCaptions(list, idx, errors, oneWord) {
   let cursor = 0;
   const out = [];
   list.forEach((c, i) => {
@@ -84,6 +86,16 @@ function alignCaptions(list, idx, errors) {
     }
     cursor = pos + key.length;
     if (show === null) return;
+    // 一次一个词的风格：字幕按 whisper 的词切开。纠过错字的那条不切
+    if (oneWord && strip(show) === key) {
+      for (let i = pos; i < cursor; ) {
+        let j = i;
+        while (j < cursor && idx.at[j].word === idx.at[i].word) j++;
+        out.push({ text: idx.text.slice(i, j), accent: show.includes("*"), start: idx.at[i].start, end: idx.at[j - 1].end });
+        i = j;
+      }
+      return;
+    }
     out.push({ text: show.replace(/\*/g, ""), accent: show.includes("*"), start: idx.at[pos].start, end: idx.at[cursor - 1].end });
   });
   return out;
@@ -91,7 +103,7 @@ function alignCaptions(list, idx, errors) {
 
 const listStyles = () => fs.readdirSync(path.join(ROOT, "styles")).map((f) => f.replace(/\.json$/, "")).sort();
 
-const TIME_KEYS = new Set(["at", "countAt", "land", "exit", "climb", "lock", "from", "to", "hold", "lit", "burst", "dive", "kwAt", "subAt", "coverAt", "checkAt", "tagAt", "go", "yank", "out", "fade", "headTo"]);
+const TIME_KEYS = new Set(["at", "countAt", "land", "exit", "climb", "lock", "from", "to", "hold", "lit", "burst", "dive", "kwAt", "subAt", "coverAt", "checkAt", "tagAt", "go", "yank", "out", "fade", "headTo", "hlAt", "textAt", "allAt", "showAt", "fill"]);
 
 // ---------- 解析声明文件：台词换成场景内秒数。数字本来就是场景内秒数 ----------
 function load(dir) {
@@ -108,7 +120,7 @@ function load(dir) {
   const idx = indexWords(JSON.parse(fs.readFileSync(path.join(dir, doc.words), "utf8")));
   const errors = [];
   const warnings = [];
-  const caps = alignCaptions(doc.captions || [], idx, errors);
+  const caps = alignCaptions(doc.captions || [], idx, errors, doc.styleSpec.captionWords);
   // 章节条：写从哪一场开始，到下一章开始时结束
   const chapters = (doc.chapters || []).map((c, i, list) => {
     const head = doc.scenes.find((s) => s.id === c.from);
@@ -148,6 +160,29 @@ function load(dir) {
           if (out.clipLen < need - 0.05) warnings.push(`${raw.id}.${b.id}：素材只有 ${len.toFixed(1)} 秒，要放 ${need.toFixed(1)} 秒，后面会定格`);
         }
       }
+      if (b.do === "news") {
+        out.clips.forEach((c, i) => {
+          const next = out.clips[i + 1];
+          c.end = next ? next.at : out.exit ?? dur;
+          if (c.src && !fs.existsSync(path.join(dir, c.src))) errors.push(`${raw.id}.${b.id}：找不到素材 ${c.src}`);
+          if (!c.video) return;
+          c.domId = `${raw.id}-${b.id}-${i}`;
+          if (!fs.existsSync(path.join(dir, c.video))) return errors.push(`${raw.id}.${b.id}：找不到素材 ${c.video}`);
+          const len = Number(spawnSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path.join(dir, c.video)], { encoding: "utf8" }).stdout);
+          c.clipLen = len - (c.mediaStart ?? 0);
+          if (c.clipLen < c.end - c.at - 0.05) warnings.push(`${raw.id}.${b.id}[${i}]：素材只有 ${len.toFixed(1)} 秒，要放 ${(c.end - c.at).toFixed(1)} 秒，后面会定格`);
+        });
+      }
+      // 走势线的数据从 CSV 读，最后一列是数值，第一列是日期。标签写日期
+      if (b.do === "chart" && b.csv) {
+        const rows = fs.readFileSync(path.join(dir, b.csv), "utf8").trim().split(/\r?\n/).map((l) => l.split(",")).filter((r) => !Number.isNaN(Number(r.at(-1))));
+        out.points = rows.map((r) => Number(r.at(-1)));
+        for (const l of out.labels || []) {
+          if (l.date) l.i = rows.findIndex((r) => r[0] === l.date);
+          if (l.i < 0) errors.push(`${raw.id}.${b.id}：CSV 里没有日期 ${l.date}`);
+        }
+        for (const seg of out.segments || []) if (seg.date) seg.upto = rows.findIndex((r) => r[0] === seg.date);
+      }
       if (b.do === "screen" && b.src && !fs.existsSync(path.join(dir, b.src))) errors.push(`${raw.id}.${b.id}：找不到素材 ${b.src}`);
       if (b.do === "headline" && [...b.text].length > 12) warnings.push(`${raw.id}.${b.id}：标题 ${[...b.text].length} 字，竖屏 64 号最多 12 字`);
       if (out.land !== undefined && out.countAt !== undefined && out.land - out.countAt < 0.2) warnings.push(`${raw.id}.${b.id}：计数只有 ${(out.land - out.countAt).toFixed(2)} 秒，看不清`);
@@ -162,24 +197,27 @@ function load(dir) {
       end: ms(Math.min(dur, i + 1 < inScene.length ? inScene[i + 1].start - start : c.end - start + 0.25)),
     }));
     const punch = raw.punch !== undefined ? rel(raw.punch, `${raw.id}.punch`) : undefined;
-    return { id: raw.id, layout: raw.layout || "S", aspect: doc.aspect, motion: doc.styleSpec.motion, start, end, dur, life: raw.life, lifeOptions: raw.lifeOptions, beats, captions, punch, chapters };
+    if (raw.matte && !fs.existsSync(path.join(dir, raw.matte))) errors.push(`${raw.id}：找不到抠像 ${raw.matte}，先跑 scripts/matte.py`);
+    return { id: raw.id, layout: raw.layout || "S", aspect: doc.aspect, motion: doc.styleSpec.motion, start, end, dur, life: raw.life, lifeOptions: raw.lifeOptions, beats, captions, punch, chapters, chapterMode: doc.styleSpec.chapters, matte: raw.matte, person: raw.person };
   });
   return { doc, scenes, errors, warnings };
 }
 
 // ---------- 生成 HyperFrames 工程 ----------
-function compositionHtml(scene) {
+// 竖屏探头的图形层只占上半屏；人放下半屏的风格，字幕压在接缝上，图形层要铺满
+const hostHeight = (scene, doc) => (scene.aspect === "portrait" && scene.layout === "S" && doc.styleSpec.person !== "half" ? 960 : SIZE[scene.aspect][1]);
+
+function compositionHtml(scene, doc) {
   const host = `rs-${scene.id}`;
   const [W, H] = SIZE[scene.aspect];
-  const h = scene.aspect === "portrait" && scene.layout === "S" ? 960 : H;
-  const css = fs.readFileSync(path.join(ENGINE, "motion.css"), "utf8").replace(".rs-scene", `#${host}`);
+  const h = hostHeight(scene, doc);
+  const css = ENGINE_CSS.map((f) => fs.readFileSync(path.join(ENGINE, f), "utf8")).join("\n").replace(".rs-scene", `#${host}`);
   // 录屏必须静态写进场景，HyperFrames 才认得；引擎再把它搬进画框
   const clips = scene.beats
-    .filter((b) => b.do === "screen" && b.video)
+    .flatMap((b) => (b.do === "screen" && b.video ? [{ ...b, end: b.exit !== undefined ? b.exit + 0.38 : scene.dur }] : b.do === "news" ? b.clips.filter((c) => c.video) : []))
     .map((b, i) => {
       const from = b.at;
-      const to = b.exit !== undefined ? b.exit + 0.38 : scene.dur;
-      return `<video id="${b.domId}" class="clip" src="${b.video}" muted playsinline data-start="${from}" data-duration="${Math.min(to - from, scene.dur - from, b.clipLen ?? Infinity).toFixed(3)}" data-media-start="${b.mediaStart ?? 0}" data-track-index="${20 + i}"></video>`;
+      return `<video id="${b.domId}" class="clip" src="${b.video}" muted playsinline data-start="${from}" data-duration="${Math.min(b.end - from, scene.dur - from, b.clipLen ?? Infinity).toFixed(3)}" data-media-start="${b.mediaStart ?? 0}" data-track-index="${20 + i}"></video>`;
     })
     .join("\n    ");
   return `<template>
@@ -230,6 +268,23 @@ function sfxOf(scene, spec) {
     if (b.do === "climax") add("swell", b.lit, 0.34);
     if (b.do === "cta") add("ding", b.kwAt, 0.36);
     if (b.do === "tally") add("ding", b.land, 0.32);
+    if (b.do === "silver") add("whoosh", b.at, 0.3);
+    if (b.do === "big" || b.do === "brush") add("ding", b.at + 0.05, 0.28);
+    if (b.do === "shrink") add("whoosh", b.land, 0.3);
+    if (b.do === "pie") add("ding", b.at + 0.1 + (b.dur ?? 0.9), 0.3);
+    if (b.do === "stat") add("ding", b.land ?? b.at + 1, 0.32);
+    if (b.do === "metro") {
+      add("whoosh", b.at, 0.32);
+      add("click", b.at + 1.3, 0.38);
+    }
+    if (b.do === "term") add("whoosh", b.at, 0.4);
+    if (b.do === "numcard") add("whoosh", Math.max(0, b.at - 0.12), 0.4);
+    if (b.do === "money") add("whoosh", b.at, 0.28);
+    if (b.do === "highlight") add("click", b.hlAt ?? b.at + 0.6, 0.34);
+    if (b.do === "chart") for (const l of b.labels || []) if (l.at !== undefined) add("click", l.at, 0.34);
+    if (["bubbles", "pills", "logos", "thread", "bars"].includes(b.do)) for (const x of b.items) add("click", x.at, 0.36);
+    if (b.do === "path") for (const x of b.nodes) add("click", x.at, 0.36);
+    if (b.do === "percolate" && b.swellAt !== undefined) add("swell", b.swellAt, 0.5);
     if (b.do === "sheet") for (const f of b.flags || []) add("click", f.at, 0.42);
     if (b.do === "screen") {
       for (const f of b.focus || []) if (f.land) add("click", f.at + (f.dur ?? 0.6), 0.35);
@@ -270,14 +325,20 @@ function indexHtml(doc, scene) {
   const px = bubble ? { w: 200, h: 200, l: 1680, t: 840, r: "50%", vw: 640, vh: 360, top: -30 } : { w: 360, h: 480, l: 1490, t: 290, r: "var(--radius)", vw: 1000, vh: 562, top: -40 };
   const faceLeft = (px.w / 2 - (doc.faceX ?? 0.5) * px.vw).toFixed(1);
   const personClip = `<div id="person" style="left:${px.l}px;top:${px.t}px;width:${px.w}px;height:${px.h}px;border-radius:${px.r}"><video id="pv" class="clip" src="${f.wide}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="2" style="left:${faceLeft}px;top:${px.top}px;width:${px.vw}px;height:${px.vh}px"></video></div>`;
+  const noPerson = scene.layout === "F" || scene.person === false || !f.wide;
   const landMedia = isA
     ? `<div id="face-wrap"><video id="fa" class="clip" src="${f.wide}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="1"></video></div>`
-    : scene.layout === "F" ? "" : personClip;
-  const media = land ? landMedia : scene.layout === "F" ? "" : isA
+    : noPerson ? "" : personClip;
+  const half = doc.styleSpec.person === "half" && scene.layout === "S";
+  const media = land ? landMedia : scene.layout === "F" || scene.layout === "W" ? "" : half
+    ? `<div id="half"><video id="hv" class="clip" src="${f.pop}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="1"></video>${tail ? `<img id="half-still" class="clip" src="${f.endStill}" alt="" data-start="${tail.at}" data-duration="${tail.len}" data-track-index="1" />` : ""}</div>`
+    : isA
     ? `<div id="face-wrap"><video id="fa" class="clip" src="${f.full}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="1"></video></div>`
     : `<div id="pop-win"><video id="pw" class="clip" src="${f.pop}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="1"></video>${tail ? `<img id="end-still" class="clip" src="${f.endStill}" alt="" data-start="${tail.at}" data-duration="${tail.len}" data-track-index="1" />` : ""}</div>
       <div id="pop-out"><video id="pm" class="clip" src="${f.matte}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="2"></video>${tail ? `<img id="end-head" class="clip" src="${f.endHead}" alt="" data-start="${tail.at}" data-duration="${tail.len}" data-track-index="2" />` : ""}</div>`;
-  const h = !land && scene.layout === "S" ? 960 : H;
+  const h = hostHeight(scene, doc);
+  // 人身后的字：抠像放在图形层上面，和全屏真人同样大小，推近时一起动
+  const matte = scene.matte && isA ? `<div id="matte-wrap"><video id="mv" class="clip" src="${scene.matte}" muted playsinline data-start="0" data-duration="${live}" data-track-index="3"></video></div>` : "";
   // 全屏真人：整场极慢推近，说到情绪词时弹簧推一下
   const faceJs = isA
     ? `
@@ -288,6 +349,8 @@ function indexHtml(doc, scene) {
         const push = s > 0 ? ${doc.styleSpec.motion?.punch ?? 0.075} * RS.spring(s, 13, 8) : 0;
         const [x, y] = s > 0 ? RS.shock(t, [{ t: ${scene.punch ?? -1}, weight: 1 }], ${doc.styleSpec.motion?.shock ?? 5}) : [0, 0];
         face.style.transform = \`translate(\${x.toFixed(2)}px,\${y.toFixed(2)}px) scale(\${(1 + 0.018 * t / ${scene.dur} + push).toFixed(4)})\`;
+        const mw = document.getElementById("matte-wrap");
+        if (mw) mw.style.transform = face.style.transform;
       };
       drawFace(0);
       main.to(clock, { t: ${scene.dur}, duration: ${scene.dur}, ease: "none", onUpdate: () => drawFace(clock.t) }, 0);`
@@ -315,6 +378,10 @@ ${ENGINE_JS.map((j) => `    <script src="assets/engine/${j}"></script>`).join("\
       #end-head { position: absolute; left: 0; top: 0; width: 480px; height: 250px; }
       #face-wrap { position: absolute; inset: 0; transform-origin: 50% 32%; z-index: 2; }
       #face-wrap video { position: absolute; left: 0; top: 0; width: ${W}px; height: ${H}px; object-fit: cover; }
+      #matte-wrap { position: absolute; inset: 0; transform-origin: 50% 32%; z-index: 6; }
+      #matte-wrap video { position: absolute; left: 0; top: 0; width: ${W}px; height: ${H}px; object-fit: cover; }
+      #half { position: absolute; left: 0; top: 960px; width: 1080px; height: 960px; overflow: hidden; z-index: 2; }
+      #half video, #half img { position: absolute; left: 0; top: 0; width: 1080px; height: 960px; object-fit: cover; }
     </style>
   </head>
   <body>
@@ -324,6 +391,7 @@ ${ENGINE_JS.map((j) => `    <script src="assets/engine/${j}"></script>`).join("\
       <div id="h-${scene.id}" data-composition-id="${scene.id}" data-composition-src="compositions/${scene.id}.html" data-start="0" data-duration="${d}" data-track-index="4" data-track-kind="graphics" data-width="${W}" data-height="${h}" style="position:absolute;left:0;top:0;width:${W}px;height:${h}px;z-index:5"></div>
       <audio id="voice" class="clip" src="${f.voice}" data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-volume="1" data-track-index="8"></audio>
       ${f.bgm ? `<audio id="bgm" class="clip" src="${f.bgm}" data-start="0" data-duration="${d}" data-media-start="${scene.start}" data-volume="${doc.bgmVolume ?? doc.styleSpec.mix?.bgm ?? 0.3}" data-track-index="9"></audio>` : ""}
+      ${matte}
       ${sfx}
     </div>
     <script>
@@ -340,10 +408,15 @@ function writeProject(dir, doc, scene) {
   const engineOut = path.join(dir, "assets/engine");
   fs.mkdirSync(engineOut, { recursive: true });
   ENGINE_JS.forEach((j) => fs.copyFileSync(path.join(ENGINE, j), path.join(engineOut, j)));
+  // 旧工程建得早，新字体补进去
+  for (const font of fs.readdirSync(path.join(ROOT, "assets/fonts"))) {
+    const to = path.join(dir, "assets/fonts", font);
+    if (!fs.existsSync(to)) fs.copyFileSync(path.join(ROOT, "assets/fonts", font), to);
+  }
   const comps = path.join(dir, "compositions");
   fs.rmSync(comps, { recursive: true, force: true });
   fs.mkdirSync(comps, { recursive: true });
-  fs.writeFileSync(path.join(comps, `${scene.id}.html`), compositionHtml(scene));
+  fs.writeFileSync(path.join(comps, `${scene.id}.html`), compositionHtml(scene, doc));
   fs.writeFileSync(path.join(dir, "index.html"), indexHtml(doc, scene));
   const meta = path.join(dir, "hyperframes.json");
   if (!fs.existsSync(meta)) fs.writeFileSync(meta, JSON.stringify({ paths: { blocks: "compositions", components: "compositions/components", assets: "assets" } }, null, 2));
@@ -351,7 +424,7 @@ function writeProject(dir, doc, scene) {
 
 const sceneHash = (doc, scene) =>
   createHash("sha1")
-    .update(JSON.stringify([scene, doc.footage, doc.styleSpec, doc.aspect, doc.faceX, compositionHtml(scene), indexHtml(doc, scene), ENGINE_JS.map((j) => fs.readFileSync(path.join(ENGINE, j), "utf8"))]))
+    .update(JSON.stringify([scene, doc.footage, doc.styleSpec, doc.aspect, doc.faceX, compositionHtml(scene, doc), indexHtml(doc, scene), [...ENGINE_JS, ...ENGINE_CSS].map((j) => fs.readFileSync(path.join(ENGINE, j), "utf8"))]))
     .digest("hex")
     .slice(0, 12);
 
@@ -396,6 +469,8 @@ function keyTimes(scene) {
     if (b.strike) ts.add(b.strike.at + 0.1);
     if (typeof b.yank === "number") [b.yank - 0.1, b.yank + 0.3].forEach((t) => ts.add(t));
     if (b.do === "verdict") ts.add(b.at + 0.6);
+    if (["silver", "big", "pie", "stat", "metro", "chart", "percolate", "numcard", "term", "quote", "tweet", "track"].includes(b.do)) ts.add(b.at + 1.3);
+    if (b.do === "shrink") ts.add(b.land + 0.9);
     if (b.do === "screen") [b.at + 0.3, b.at + 1.2, ...(b.focus || []).map((f) => f.at + (f.dur ?? 0.6)), ...(b.labels || []).map((l) => l.at + 0.2)].forEach((t) => ts.add(t));
     if (b.do === "tally") [b.fade + 0.3, (b.fade + b.land) / 2, b.land + 0.05, b.land + 0.5].forEach((t) => ts.add(t));
     if (b.do === "climax") [b.lit + 0.3, b.burst + 0.6, b.dive - 0.3, b.dive + 0.25].forEach((t) => ts.add(t));
@@ -466,6 +541,14 @@ function cmdRender(dir, wanted, quality) {
   console.log(out);
 }
 
+function cmdQa(dir) {
+  const { doc } = load(dir);
+  const video = path.join(dir, "renders", `${doc.title}${TRY.style ? `-${TRY.style}` : ""}-final.mp4`);
+  if (!fs.existsSync(video)) die(`还没有成片：${video}，先跑 rs final`);
+  const r = spawnSync("python3", [path.join(ROOT, "scripts/qa_video.py"), video, "--scenes", path.join(dir, "renders/scenes.json"), "--lufs", String(doc.styleSpec.mix?.lufs ?? -16)], { stdio: "inherit" });
+  process.exit(r.status ?? 1);
+}
+
 // 成片：画面按帧拼，音频不从片段里拼，整条重混，接缝不会有咔哒声
 function cmdFinal(dir, quality) {
   const { doc, scenes, errors } = load(dir);
@@ -486,11 +569,14 @@ function cmdFinal(dir, quality) {
   const mix = `${labels}amix=inputs=${beds.length + cues.length}:normalize=0:duration=longest,apad,atrim=0:${total.toFixed(3)},loudnorm=I=${doc.styleSpec.mix?.lufs ?? -16}:TP=-1.5:LRA=11[a]`;
   const audio = path.join(dir, ".studio/cache/master.m4a");
   run("ffmpeg", ["-v", "error", "-y", ...inputs, "-filter_complex", `${chains.join(";")};${mix}`, "-map", "[a]", "-ar", "48000", "-c:a", "aac", "-b:a", "256k", audio]);
-  const out = path.join(dir, "renders", `${doc.title}-final.mp4`);
+  const out = path.join(dir, "renders", `${doc.title}${TRY.style ? `-${TRY.style}` : ""}-final.mp4`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   run("ffmpeg", ["-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", list, "-i", audio, "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "copy", "-movflags", "+faststart", out]);
   const n = run("ffprobe", ["-v", "error", "-count_packets", "-select_streams", "v", "-show_entries", "stream=nb_read_packets", "-of", "csv=p=0", out]).trim().replace(/,$/, "");
   const want = Math.round(total * FPS);
+  const words = JSON.parse(fs.readFileSync(path.join(dir, doc.words), "utf8"));
+  const brief = scenes.map((s) => ({ id: s.id, start: s.start, end: s.end, label: s.layout, visual: [...new Set(s.beats.map((b) => b.do))].join("、"), text: words.filter((w) => w.start >= s.start && w.start < s.end).map((w) => w.text).join("") }));
+  fs.writeFileSync(path.join(dir, "renders/scenes.json"), `${JSON.stringify(brief, null, 1)}\n`);
   console.log(`${out}\n画面 ${n} 帧，应为 ${want} 帧；音效 ${cues.length} 处`);
   if (Number(n) !== want) console.log("提醒  帧数和时长对不上，检查接缝");
 }
@@ -522,4 +608,5 @@ if (cmd === "check") process.exit(cmdCheck(dir) ? 0 : 1);
 else if (cmd === "frames") cmdFrames(dir, names);
 else if (cmd === "render") cmdRender(dir, names, quality);
 else if (cmd === "final") cmdFinal(dir, quality);
+else if (cmd === "qa") cmdQa(dir);
 else die(`未知命令：${cmd}`);

@@ -283,10 +283,10 @@
   }
 
   /* 章节条：不参与呼吸，跨场景连续。进度按全片时间算，拼起来不会跳 */
-  function chapters(host, list, sceneStart) {
+  function chapters(host, list, sceneStart, mode) {
     if (!list || !list.length) return () => {};
-    host.classList.add("rs-has-chapters");
-    const bar = el("div", "rs-chapters", host);
+    host.classList.add(mode === "tag" ? "rs-has-tag" : "rs-has-chapters");
+    const bar = el("div", mode === "tag" ? "rs-chapter-tag" : "rs-chapters", host);
     const items = list.map((c) => {
       const n = el("div", "rs-chapter", bar, c.label);
       return { ...c, n, fill: el("i", "", n) };
@@ -360,7 +360,7 @@
     const lifeOptions = { ...(scene.motion || {}), ...(scene.lifeOptions || {}) };
     const breathe = scene.life === false || hardCut ? () => {} : life(cam, parts, lands, scene.dur, lifeOptions);
     const cap = captions(host, scene.captions || []);
-    const chapterBar = chapters(host, scene.chapters, scene.start);
+    const chapterBar = chapters(host, scene.chapters, scene.start, scene.chapterMode);
     return (t) => {
       made.forEach((m) => m.render(t));
       const mods = {};

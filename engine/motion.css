@@ -50,12 +50,12 @@
 .rs-marker::after { content: ""; position: absolute; left: 16px; top: 20px; width: 18px; height: 18px; border-left: 5px solid var(--accent-ink); border-top: 5px solid var(--accent-ink); transform: rotate(45deg); }
 
 .rs-captions { position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none; }
-.rs-cap { position: absolute; left: 50%; top: 806px; white-space: nowrap; font: var(--cap-weight) 84px var(--f-heavy); color: var(--cap-color); background: var(--cap-bg); padding: var(--cap-pad); border-radius: 8px; visibility: hidden; transform-origin: 50% 60%; }
+.rs-cap { position: absolute; left: 50%; top: var(--cap-top-s, 806px); white-space: nowrap; font: var(--cap-weight) var(--cap-size-s, 84px) var(--f-heavy); color: var(--cap-color); background: var(--cap-bg); padding: var(--cap-pad); border-radius: var(--cap-radius, 8px); visibility: hidden; transform-origin: 50% 60%; }
 
 /* 全屏真人版式的字幕：白字压在下方 */
 .rs-layout-a { position: absolute; left: 0; top: 0; width: 1080px; overflow: hidden; }
 .rs-layout-s { position: absolute; left: 0; top: 0; width: 1080px; overflow: hidden; }
-.rs-layout-a .rs-cap { top: 1330px; font-size: 76px; color: var(--surface); text-shadow: 0 4px 18px rgba(0,0,0,.55), 0 1px 3px rgba(0,0,0,.5); }
+.rs-layout-a .rs-cap { top: var(--cap-top-a, 1330px); font-size: var(--cap-size-a, 76px); color: var(--cap-a-color-p, var(--surface)); background: var(--cap-a-bg-p, var(--cap-bg)); text-shadow: var(--cap-a-shadow, 0 4px 18px rgba(0,0,0,.55), 0 1px 3px rgba(0,0,0,.5)); }
 .rs-layout-a .rs-cap.rs-accent { color: var(--cap-a-accent); }
 .rs-cap.rs-accent { color: var(--cap-accent); }
 
@@ -157,7 +157,8 @@
 .rs-aspect-l .rs-cap { top: 975px; font-size: var(--cap-size-l); }
 .rs-aspect-l.rs-layout-s .rs-cap { left: 735px; }
 .rs-aspect-l.rs-layout-a .rs-cap, .rs-aspect-l.rs-layout-w .rs-cap { top: 975px; font-size: var(--cap-size-l); color: var(--cap-a-color); background: var(--cap-a-bg, rgba(0,0,0,.5)); padding: var(--cap-a-pad, 6px 18px); text-shadow: none; }
-.rs-layout-w .rs-screen { left: 0; top: 0; width: 1920px; border: 0; border-radius: 0; box-shadow: none; }
+.rs-layout-w { position: absolute; left: 0; top: 0; overflow: hidden; }
+.rs-layout-w .rs-screen { left: 0; top: 0; width: 100%; border: 0; border-radius: 0; box-shadow: none; }
 .rs-layout-w .rs-screen-bar { display: none; }
 .rs-layout-w .rs-screen-src { position: absolute; right: 24px; top: 20px; padding: 6px 16px; border-radius: 8px; background: rgba(0,0,0,.45); color: #fff; }
 .rs-layout-w .rs-screen-label { font-size: 44px; padding: 14px 32px; background: var(--ink); color: var(--bg); }
@@ -167,6 +168,7 @@
 .rs-mark { position: absolute; opacity: 0; pointer-events: none; }
 .rs-mark-dim { position: absolute; inset: 0; border-radius: 6px; box-shadow: 0 0 0 4000px rgba(20,16,12,.34); }
 .rs-mark-box { position: absolute; inset: 0; border-radius: 6px; border: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.rs-mark.is-pen .rs-mark-box { border: 0; border-radius: 3px; background: color-mix(in srgb, var(--accent-text) 42%, transparent); outline: 3px solid var(--accent); }
 .rs-mark-tag { position: absolute; padding: 8px 20px; border-radius: 12px; background: var(--accent); color: var(--accent-ink); font: 700 30px "HeiBold"; white-space: nowrap; opacity: 0; z-index: 3; box-shadow: 0 8px 20px rgba(0,0,0,.22); }
 .rs-layout-w .rs-mark-tag { font-size: 42px; padding: 12px 30px; }
 

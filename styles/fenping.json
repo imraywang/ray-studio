@@ -1,0 +1,14 @@
+{
+ "name": "竖屏分屏",
+ "summary": "暖白底，上画面下真人，字幕是接缝上的黑胶囊。不回弹，适合观点和科普口播，名词和人物整屏。",
+ "tokens": {
+  "bg": "#f3f3f0", "bg-image": "none",
+  "surface": "#ffffff", "ink": "#111111", "sub": "#6e6e6e", "faint": "#c9c9c5", "well": "#e4e4e0", "line": "rgba(17,17,17,.1)",
+  "accent": "#054c4c", "accent-text": "#054c4c", "accent-ink": "#f3f3f0", "shadow": "0 18px 40px rgba(17,17,17,.1)",
+  "radius": "24px", "f-heavy": "HeiHeavy", "w-heavy": "900",
+  "cap-color": "#f3f3f0", "cap-accent": "#9cc2bf", "cap-bg": "rgba(17,17,17,.84)", "cap-pad": "8px 26px", "cap-radius": "18px", "cap-size-s": "64px", "cap-top-s": "918px", "cap-size-a": "64px", "cap-top-a": "1196px", "cap-a-color-p": "#f3f3f0", "cap-a-bg-p": "rgba(17,17,17,.84)", "cap-a-shadow": "none", "cap-size-l": "44px", "cap-weight": "900", "cap-a-color": "#f3f3f0", "cap-a-accent": "#9cc2bf"
+ },
+ "motion": { "bounce": 0, "shock": 0, "sway": 0, "rot": 0, "float": 1, "push": 0.03, "punch": 0.09 },
+ "person": "half",
+ "mix": { "bgm": 0.32, "sfx": 1, "lufs": -16 }
+}
