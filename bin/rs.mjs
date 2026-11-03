@@ -338,7 +338,7 @@ function indexHtml(doc, scene) {
       <div id="pop-out"><video id="pm" class="clip" src="${f.matte}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="2"></video>${tail ? `<img id="end-head" class="clip" src="${f.endHead}" alt="" data-start="${tail.at}" data-duration="${tail.len}" data-track-index="2" />` : ""}</div>`;
   const h = hostHeight(scene, doc);
   // 人身后的字：抠像放在图形层上面，和全屏真人同样大小，推近时一起动
-  const matte = scene.matte && isA ? `<div id="matte-wrap"><video id="mv" class="clip" src="${scene.matte}" muted playsinline data-start="0" data-duration="${live}" data-track-index="3"></video></div>` : "";
+  const matte = scene.matte ? `<div id="matte-wrap"><video id="mv" class="clip" src="${scene.matte}" muted playsinline data-start="0" data-duration="${live}" data-track-index="3"></video></div>` : "";
   // 全屏真人：整场极慢推近，说到情绪词时弹簧推一下
   const faceJs = isA
     ? `

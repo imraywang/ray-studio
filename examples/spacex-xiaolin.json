@@ -1,0 +1,1449 @@
+{
+ "title": "spacex",
+ "style": "xiaolin",
+ "aspect": "landscape",
+ "words": "words.json",
+ "footage": {
+  "voice": "assets/footage/voice.m4a",
+  "bgm": "assets/audio/bgm.m4a"
+ },
+ "footageEnd": 191.76,
+ "chapters": [
+  {
+   "label": "① 为什么是现在",
+   "from": "why1"
+  },
+  {
+   "label": "② 股票怎么送",
+   "from": "acct1"
+  },
+  {
+   "label": "③ 为什么绕道基金会",
+   "from": "tax1"
+  },
+  {
+   "label": "④ 孩子拿到的是什么",
+   "from": "kid1"
+  },
+  {
+   "label": "⑤ 历史上的先例",
+   "from": "mg1"
+  },
+  {
+   "label": "⑥ 慈善，还是收买",
+   "from": "ch1"
+  }
+ ],
+ "captions": [
+  "10 月 19 日",
+  "马斯克在 X 上发了一句话",
+  "明年",
+  "我会把我的 SpaceX 股票",
+  "送给美国每个孩子一股",
+  "这只是很多次里的第一次",
+  "美国 18 岁以下的孩子有 7200 万",
+  "按发推前的收盘价",
+  "一共是 105 亿美元",
+  "可孩子拿到这一股",
+  "好几年都不能卖",
+  "家长也不能说不要",
+  "他为什么要送",
+  "股票怎么送到孩子手里",
+  "历史上有人这么干过吗",
+  "先说为什么是现在",
+  "就在前一天",
+  "美国 AI 公司 Anthropic 宣布",
+  "拿出 5%的股份成立公益基金",
+  "用途里就包括应对 AI 带来的失业",
+  "马斯克在下面回了一句",
+  "我建议直接把股份发给公众",
+  "我就打算这么做",
+  "第二天",
+  "他就发了这条",
+  "那股票怎么送",
+  "特朗普已经说了",
+  "走一种新账户",
+  "叫特朗普账户",
+  "它是去年大而美法案设立的",
+  "可以理解成国家给每个美国孩子开的存钱罐",
+  "钱只能买跟着美股大盘走的指数基金",
+  "18 岁之前取不出来",
+  "今年 9 月 30 日",
+  "美国财政部改了规则",
+  "允许往里捐上市公司的股票",
+  "流程是这样的",
+  "马斯克先把股票捐给慈善机构",
+  "比如他自己的基金会",
+  "报财政部批准",
+  "再由财政部转进每个孩子的账户",
+  "为什么要绕一道基金会",
+  "因为这一步能省税",
+  "打个比方",
+  "一笔 100 万美元买的股票",
+  "涨到了 1 亿",
+  "要是卖掉",
+  "这 9900 万的涨幅都要交税",
+  "捐给基金会不算卖出",
+  "这笔税就不用交了",
+  "还能按 1 亿的市值",
+  "从自己的应税收入里扣",
+  "每年最多扣掉收入的 20%",
+  "马斯克的 SpaceX 股份",
+  "是 2002 年创办公司时就拿到的",
+  "那孩子拿到的是什么",
+  "一股大约 146 美元",
+  "1000 元人民币左右",
+  "但规矩很严",
+  "股票要么锁五年",
+  "要么锁到孩子 17 岁那年年底",
+  "哪个先到算哪个",
+  "家长不能拒收",
+  "也不能换成别的股票",
+  "连财政部自己都承认",
+  "这会让孩子的钱集中押在一家公司上",
+  "还有",
+  "没有社保号、不是美国公民的孩子",
+  "拿不到这一股",
+  "历史上真有人给全民发过股票",
+  "2011 年",
+  "蒙古把国有煤矿的股份分给全体公民",
+  "每人 1072 股",
+  "后来一股没卖的人",
+  "拿到的全部分红折合 34 美元左右",
+  "可很多人没等到这一天",
+  "在选举前就把股票换成了现金",
+  "1992 年",
+  "俄罗斯给几乎每个公民发私有化凭证",
+  "用来换国企的股份",
+  "4000 万人成了股东",
+  "不少人很快就把凭证卖了换钱",
+  "股份最后大多落到了企业管理层手里",
+  "这一次的锁定期",
+  "正好让孩子没法早早卖掉",
+  "那这到底算什么",
+  "说它是慈善",
+  "105 亿美元是真金白银",
+  "在他之前",
+  "SpaceX 的总裁肖特韦尔已经承诺给 200 多万个孩子每人一股",
+  "戴尔夫妇也承诺捐出 62.5 亿美元",
+  "说它是收买",
+  "税省下来了",
+  "股票锁住了",
+  "还多了 7200 万个关心 SpaceX 股价的家庭",
+  "财政部在规则里写得很直白",
+  "捐股票的人图的",
+  "就是让孩子和家里人觉得",
+  "自己和这家公司的命运绑在了一起",
+  "批评的人担心",
+  "以后谁想严管这家公司",
+  "就得先面对这些家庭",
+  "105 亿",
+  "大约是马斯克身家的 1%",
+  [
+   null,
+   "你觉得这是真慈善"
+  ],
+  [
+   null,
+   "还是收买"
+  ]
+ ],
+ "scenes": [
+  {
+   "id": "hook1",
+   "layout": "W",
+   "person": false,
+   "start": 0,
+   "end": 4.6,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/starship1.mp4",
+       "at": 0,
+       "source": "SpaceX · Starship 第十次试飞"
+      },
+      {
+       "video": "assets/footage/clips/musk1.mp4",
+       "at": 2.4,
+       "source": "VideoFromSpace · Starbase"
+      }
+     ]
+    },
+    {
+     "id": "nm",
+     "do": "name",
+     "en": "Elon Musk",
+     "zh": "SpaceX 创始人",
+     "nick": "马斯克",
+     "at": 2.6,
+     "exit": 4.5
+    }
+   ]
+  },
+  {
+   "id": "tweet1",
+   "layout": "W",
+   "person": false,
+   "start": 4.6,
+   "end": 6.7,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "src": "assets/img/musk1-blur.jpg",
+       "at": 0,
+       "source": "X · @elonmusk · 2026-10-19",
+       "dim": 0.5
+      }
+     ]
+    },
+    {
+     "id": "t",
+     "do": "tweet",
+     "src": "assets/img/tweet-musk.png",
+     "at": 0.02
+    }
+   ]
+  },
+  {
+   "id": "oneshare",
+   "layout": "W",
+   "person": false,
+   "start": 6.7,
+   "end": 10.25,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/musk2.mp4",
+       "at": 0,
+       "source": "VideoFromSpace · Starbase",
+       "still": true
+      }
+     ]
+    },
+    {
+     "id": "b",
+     "do": "behind",
+     "at": "一股-0.1",
+     "size": 420,
+     "items": [
+      {
+       "text": "一",
+       "x": 190,
+       "y": 250
+      },
+      {
+       "text": "股",
+       "x": 1350,
+       "y": 250,
+       "at": "一股+0.1"
+      }
+     ]
+    }
+   ],
+   "matte": "assets/footage/musk2-matte.webm"
+  },
+  {
+   "id": "money",
+   "layout": "W",
+   "person": false,
+   "start": 10.25,
+   "end": 15.75,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/kids2.mp4",
+       "at": 0,
+       "source": "The White House"
+      },
+      {
+       "video": "assets/footage/clips/kids1.mp4",
+       "at": "按发推前",
+       "source": "The White House"
+      },
+      {
+       "video": "assets/footage/clips/nyse1.mp4",
+       "at": "一共是-0.4",
+       "source": "AFP"
+      }
+     ]
+    },
+    {
+     "id": "s",
+     "do": "stat",
+     "key": "美国 18 岁以下的孩子",
+     "value": 7200,
+     "unit": "万",
+     "note": "每人一股",
+     "at": "7200-0.1",
+     "countAt": "7200-0.1",
+     "land": "7200+0.5",
+     "exit": "一共是-0.4"
+    },
+    {
+     "id": "t",
+     "do": "silver",
+     "kicker": "按发推前收盘价 · 合计",
+     "text": "105 亿美元",
+     "en": "$10.5 billion in SpaceX stock",
+     "dim": true,
+     "at": "一共是-0.3"
+    }
+   ]
+  },
+  {
+   "id": "locked",
+   "layout": "W",
+   "person": false,
+   "start": 15.75,
+   "end": 20.45,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/kids3.mp4",
+       "at": 0,
+       "source": "The White House"
+      },
+      {
+       "video": "assets/footage/clips/kids4.mp4",
+       "at": "家长",
+       "source": "The White House"
+      }
+     ]
+    },
+    {
+     "id": "p",
+     "do": "pills",
+     "top": 760,
+     "left": 110,
+     "items": [
+      {
+       "text": "好几年不能卖",
+       "kind": "no",
+       "at": "好几年"
+      },
+      {
+       "text": "家长不能拒绝",
+       "kind": "no",
+       "at": "家长"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ask",
+   "layout": "W",
+   "person": false,
+   "start": 20.45,
+   "end": 25.4,
+   "beats": [
+    {
+     "id": "q",
+     "do": "bubbles",
+     "items": [
+      {
+       "text": "为什么送",
+       "at": 0.05
+      },
+      {
+       "text": "怎么送",
+       "at": "股票怎么送"
+      },
+      {
+       "text": "有先例吗",
+       "at": "历史上"
+      }
+     ],
+     "allAt": "干过吗+0.2"
+    }
+   ]
+  },
+  {
+   "id": "why1",
+   "layout": "W",
+   "person": false,
+   "start": 25.4,
+   "end": 27.2,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/starship2.mp4",
+       "at": 0,
+       "source": "SpaceX"
+      }
+     ]
+    },
+    {
+     "id": "t",
+     "do": "silver",
+     "kicker": "起因",
+     "text": "为什么是现在",
+     "en": "why now",
+     "dim": true,
+     "at": 0.05
+    }
+   ]
+  },
+  {
+   "id": "why2",
+   "layout": "W",
+   "person": false,
+   "start": 27.2,
+   "end": 30.55,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/dario1.mp4",
+       "at": 0,
+       "source": "CBS Sunday Morning"
+      }
+     ]
+    },
+    {
+     "id": "n",
+     "do": "name",
+     "en": "Dario Amodei",
+     "zh": "Anthropic CEO",
+     "at": "美国AI"
+    }
+   ]
+  },
+  {
+   "id": "why3",
+   "layout": "W",
+   "person": false,
+   "start": 30.55,
+   "end": 35.45,
+   "beats": [
+    {
+     "id": "q",
+     "do": "quote",
+     "bg": "assets/img/dario1-blur.jpg",
+     "media": "CNBC",
+     "text": "Anthropic 宣布拿出 *5% 的股份*<br>成立公益基金",
+     "note": "2026 年 10 月 18 日",
+     "at": 0.02
+    }
+   ]
+  },
+  {
+   "id": "why4",
+   "layout": "W",
+   "person": false,
+   "start": 35.45,
+   "end": 43.4,
+   "beats": [
+    {
+     "id": "a",
+     "do": "tweet",
+     "src": "assets/img/tweet-anthropic.png",
+     "at": 0.02,
+     "exit": "我建议-0.1"
+    },
+    {
+     "id": "b",
+     "do": "tweet",
+     "src": "assets/img/tweet-musk-reply1.png",
+     "at": "我建议",
+     "text": "「我建议*直接把股份发给公众*，我就打算这么做」",
+     "exit": "第二天-0.1"
+    },
+    {
+     "id": "p",
+     "do": "path",
+     "at": "第二天",
+     "nodes": [
+      {
+       "label": "10.18 Anthropic",
+       "at": "第二天"
+      },
+      {
+       "label": "10.19 马斯克发推",
+       "at": "发了这条"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "acct1",
+   "layout": "W",
+   "person": false,
+   "start": 43.4,
+   "end": 47.7,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/obbba.mp4",
+       "at": 0,
+       "source": "The White House · 2025-07-04"
+      }
+     ]
+    },
+    {
+     "id": "t",
+     "do": "silver",
+     "kicker": "大而美法案设立",
+     "text": "特朗普账户",
+     "en": "Trump Accounts",
+     "dim": true,
+     "at": "特朗普已经说了"
+    }
+   ]
+  },
+  {
+   "id": "acct2",
+   "layout": "W",
+   "person": false,
+   "start": 47.7,
+   "end": 53.05,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/ta.mp4",
+       "at": 0,
+       "fit": "contain",
+       "source": "trumpaccounts.gov",
+       "still": true,
+       "bg": "#141515"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "acct3",
+   "layout": "W",
+   "person": false,
+   "start": 53.05,
+   "end": 57.45,
+   "beats": [
+    {
+     "id": "b",
+     "do": "bubbles",
+     "items": [
+      {
+       "text": "只能买<br>*指数基金*",
+       "at": "指数基金-0.2"
+      },
+      {
+       "text": "18 岁前<br>*取不出来*",
+       "at": "18岁"
+      }
+     ],
+     "allAt": "取不出来"
+    }
+   ]
+  },
+  {
+   "id": "flow1",
+   "layout": "W",
+   "person": false,
+   "start": 57.45,
+   "end": 62.45,
+   "beats": [
+    {
+     "id": "a",
+     "do": "screen",
+     "paper": true,
+     "src": "assets/img/rule-p1-01.png",
+     "source": "联邦公报 · 财政部规则",
+     "at": 0,
+     "exit": "允许",
+     "marks": [
+      {
+       "at": "改了规则",
+       "x": 35.5,
+       "y": 6.35,
+       "w": 32.3,
+       "h": 3.4,
+       "pen": true
+      }
+     ]
+    },
+    {
+     "id": "b",
+     "do": "screen",
+     "paper": true,
+     "src": "assets/img/rule-p1-01.png",
+     "pos": "50% 58%",
+     "source": "联邦公报 · 财政部规则",
+     "at": "允许",
+     "marks": [
+      {
+       "at": "允许+0.2",
+       "x": 23.4,
+       "y": 33.7,
+       "w": 41.6,
+       "h": 5.6,
+       "pen": true,
+       "text": "允许捐上市公司股票"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flow2",
+   "layout": "W",
+   "person": false,
+   "start": 62.45,
+   "end": 71,
+   "beats": [
+    {
+     "id": "f",
+     "do": "bubbles",
+     "size": 210,
+     "items": [
+      {
+       "text": "马斯克",
+       "at": "马斯克"
+      },
+      {
+       "text": "慈善机构",
+       "at": "慈善机构"
+      },
+      {
+       "text": "财政部",
+       "at": "财政部"
+      },
+      {
+       "text": "孩子的账户",
+       "at": "每个孩子",
+       "tag": [
+        "×",
+        "7,200 万"
+       ]
+      }
+     ],
+     "allAt": "账户+0.1"
+    },
+    {
+     "id": "m",
+     "do": "money",
+     "a": [
+      14,
+      42
+     ],
+     "b": [
+      86,
+      42
+     ],
+     "at": "转进",
+     "count": 6,
+     "stagger": 0.12,
+     "dur": 0.9,
+     "sign": "$"
+    }
+   ]
+  },
+  {
+   "id": "tax1",
+   "layout": "W",
+   "person": false,
+   "start": 71,
+   "end": 74.35,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "src": "assets/img/falcon1-gray.jpg",
+       "at": 0,
+       "dim": 0.55
+      }
+     ]
+    },
+    {
+     "id": "b",
+     "do": "brush",
+     "text": "省税",
+     "at": "省税-0.15"
+    }
+   ]
+  },
+  {
+   "id": "tax2",
+   "layout": "W",
+   "person": false,
+   "start": 74.35,
+   "end": 89.25,
+   "beats": [
+    {
+     "id": "b",
+     "do": "bars",
+     "items": [
+      {
+       "label": "买入成本",
+       "value": 100,
+       "text": "100 万",
+       "at": "100万"
+      },
+      {
+       "label": "现在的市值",
+       "value": 10000,
+       "text": "1 亿",
+       "at": "1亿",
+       "hit": true
+      }
+     ]
+    },
+    {
+     "id": "p",
+     "do": "pills",
+     "top": 800,
+     "left": 330,
+     "items": [
+      {
+       "text": "卖掉：9,900 万涨幅要交税",
+       "kind": "no",
+       "at": "9900"
+      },
+      {
+       "text": "捐掉：不算卖出",
+       "kind": "ok",
+       "at": "不算卖出"
+      },
+      {
+       "text": "还能抵扣 1 亿",
+       "kind": "ok",
+       "at": "市值"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "tax3",
+   "layout": "W",
+   "person": false,
+   "start": 89.25,
+   "end": 92.2,
+   "beats": [
+    {
+     "id": "p",
+     "do": "pie",
+     "value": 20,
+     "label": "每年最多抵扣",
+     "at": 0.02,
+     "dur": 0.8
+    }
+   ]
+  },
+  {
+   "id": "tax4",
+   "layout": "W",
+   "person": false,
+   "start": 92.2,
+   "end": 96.5,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "src": "assets/img/falcon1-dark.jpg",
+       "at": 0
+      }
+     ]
+    },
+    {
+     "id": "t",
+     "do": "silver",
+     "kicker": "SpaceX 创办 · 马斯克拿到股份",
+     "text": "2002",
+     "en": "photo: Falcon 1, 2008",
+     "dim": 0.4,
+     "at": "SpaceX+0.3"
+    }
+   ]
+  },
+  {
+   "id": "kid1",
+   "layout": "W",
+   "person": false,
+   "start": 96.5,
+   "end": 101.75,
+   "beats": [
+    {
+     "id": "c",
+     "do": "chart",
+     "csv": "assets/spcx.csv",
+     "max": 222,
+     "min": 130,
+     "title": "SPCX 日收盘价（美元，盈透证券）",
+     "at": 0.02,
+     "segments": [
+      {
+       "at": 0.3,
+       "dur": 1.6,
+       "date": "2026-06-16"
+      },
+      {
+       "at": "一股",
+       "dur": 1,
+       "date": "2026-10-16"
+      }
+     ],
+     "labels": [
+      {
+       "date": "2026-06-16",
+       "text": "最高 201.8",
+       "dy": -46
+      },
+      {
+       "date": "2026-10-16",
+       "text": "10-16 收 146.03",
+       "dy": 34
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "kid2",
+   "layout": "W",
+   "person": false,
+   "start": 101.75,
+   "end": 108.2,
+   "beats": [
+    {
+     "id": "t",
+     "do": "track",
+     "label": "锁定期，哪个先到算哪个",
+     "pct": 100,
+     "fill": "锁五年-0.2",
+     "dur": 2,
+     "at": 0.02,
+     "pins": [
+      {
+       "pct": 45,
+       "text": "锁 5 年",
+       "at": "锁五年"
+      },
+      {
+       "pct": 80,
+       "text": "17 岁那年年底",
+       "at": "17岁"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "kid3",
+   "layout": "W",
+   "person": false,
+   "start": 108.2,
+   "end": 110.8,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/kids3.mp4",
+       "at": 0,
+       "source": "The White House"
+      }
+     ]
+    },
+    {
+     "id": "p",
+     "do": "pills",
+     "top": 760,
+     "items": [
+      {
+       "text": "不能拒收",
+       "kind": "no",
+       "at": "不能拒收"
+      },
+      {
+       "text": "不能换成别的股票",
+       "kind": "no",
+       "at": "不能换"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "kid4",
+   "layout": "W",
+   "person": false,
+   "start": 110.8,
+   "end": 115.35,
+   "beats": [
+    {
+     "id": "a",
+     "do": "screen",
+     "paper": true,
+     "src": "assets/img/rule-p49-49.png",
+     "source": "联邦公报 · 财政部规则",
+     "at": 0,
+     "marks": [
+      {
+       "at": "承认",
+       "x": 34.5,
+       "y": 15.1,
+       "w": 53.3,
+       "h": 5.9,
+       "pen": true
+      },
+      {
+       "at": "集中",
+       "x": 11.5,
+       "y": 22.2,
+       "w": 39.2,
+       "h": 5.9,
+       "pen": true,
+       "text": "持仓集中的额外风险"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "kid5",
+   "layout": "W",
+   "person": false,
+   "start": 115.35,
+   "end": 119.7,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/belltrump.mp4",
+       "at": 0,
+       "source": "The White House"
+      }
+     ]
+    },
+    {
+     "id": "p",
+     "do": "pills",
+     "top": 760,
+     "items": [
+      {
+       "text": "没有社保号",
+       "kind": "no",
+       "at": "没有社保号"
+      },
+      {
+       "text": "不是美国公民",
+       "kind": "no",
+       "at": "不是美国公民"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "mg1",
+   "layout": "W",
+   "person": false,
+   "start": 119.7,
+   "end": 121.9,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/tt2.mp4",
+       "at": 0,
+       "source": "VostokMD · 塔温陶勒盖煤矿",
+       "dim": 0.6
+      }
+     ]
+    },
+    {
+     "id": "m",
+     "do": "metro",
+     "kicker": "第 5 站",
+     "title": "历史上的先例",
+     "stations": [
+      "为什么",
+      "怎么送",
+      "省税",
+      "孩子",
+      "先例",
+      "慈善？"
+     ],
+     "cur": 4,
+     "at": 0.02
+    }
+   ]
+  },
+  {
+   "id": "mg2",
+   "layout": "W",
+   "person": false,
+   "start": 121.9,
+   "end": 127.6,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/tt1.mp4",
+       "at": 0,
+       "source": "MNB World"
+      }
+     ]
+    },
+    {
+     "id": "s",
+     "do": "stat",
+     "key": "2011 · 蒙古塔温陶勒盖煤矿",
+     "value": 1072,
+     "unit": "股",
+     "note": "每个公民",
+     "at": "1072-0.1",
+     "land": "1072+0.6"
+    },
+    {
+     "id": "r",
+     "do": "ruler",
+     "years": [
+      1990,
+      2030
+     ],
+     "stops": [
+      {
+       "year": 2011,
+       "at": 0
+      }
+     ],
+     "at": 0
+    }
+   ]
+  },
+  {
+   "id": "mg3",
+   "layout": "W",
+   "person": false,
+   "start": 127.6,
+   "end": 131.85,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/tt2.mp4",
+       "at": 0,
+       "source": "VostokMD",
+       "mediaStart": 3.5
+      }
+     ]
+    },
+    {
+     "id": "s",
+     "do": "stat",
+     "key": "一股没卖，全部分红折合",
+     "prefix": "≈ $",
+     "value": 34,
+     "note": "来源：NRGI",
+     "at": "全部分红",
+     "land": "34"
+    },
+    {
+     "id": "r",
+     "do": "ruler",
+     "years": [
+      1990,
+      2030
+     ],
+     "stops": [
+      {
+       "year": 2011,
+       "at": 0
+      }
+     ],
+     "at": 0
+    }
+   ]
+  },
+  {
+   "id": "mg4",
+   "layout": "W",
+   "person": false,
+   "start": 131.85,
+   "end": 136.85,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/mng1.mp4",
+       "at": 0,
+       "source": "AP Archive · 蒙古选举"
+      },
+      {
+       "video": "assets/footage/clips/mng2.mp4",
+       "at": "在选举前",
+       "source": "AP Archive"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ru1",
+   "layout": "W",
+   "person": false,
+   "start": 136.85,
+   "end": 143.8,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/rus1.mp4",
+       "at": 0,
+       "source": "AP Archive · 1994 莫斯科"
+      },
+      {
+       "src": "assets/img/voucher-1992.jpg",
+       "at": "用来换",
+       "fit": "contain",
+       "bg": "#141515",
+       "source": "俄罗斯私有化凭证 · 1992"
+      },
+      {
+       "video": "assets/footage/clips/rus1.mp4",
+       "at": "4000-0.05",
+       "mediaStart": 2.5,
+       "dim": 0.55
+      }
+     ]
+    },
+    {
+     "id": "s",
+     "do": "stat",
+     "key": "1992 · 俄罗斯私有化凭证",
+     "value": 4000,
+     "unit": "万",
+     "note": "人成了股东",
+     "at": "4000-0.05",
+     "land": "4000+0.5"
+    },
+    {
+     "id": "r",
+     "do": "ruler",
+     "years": [
+      1990,
+      2030
+     ],
+     "stops": [
+      {
+       "year": 1992,
+       "at": 0
+      }
+     ],
+     "at": 0
+    }
+   ]
+  },
+  {
+   "id": "ru2",
+   "layout": "W",
+   "person": false,
+   "start": 143.8,
+   "end": 148.55,
+   "beats": [
+    {
+     "id": "f",
+     "do": "bubbles",
+     "items": [
+      {
+       "text": "凭证",
+       "at": "凭证"
+      },
+      {
+       "text": "卖掉换钱",
+       "at": "卖了换钱"
+      },
+      {
+       "text": "企业管理层",
+       "at": "企业管理层"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ru3",
+   "layout": "W",
+   "person": false,
+   "start": 148.55,
+   "end": 152.6,
+   "beats": [
+    {
+     "id": "t",
+     "do": "silver",
+     "kicker": "这一次",
+     "text": "锁定期",
+     "en": "no early selling",
+     "at": 0.05
+    }
+   ]
+  },
+  {
+   "id": "ch1",
+   "layout": "W",
+   "person": false,
+   "start": 152.6,
+   "end": 157.15,
+   "beats": [
+    {
+     "id": "b",
+     "do": "brush",
+     "sides": [
+      "慈善",
+      "收买"
+     ],
+     "at": "慈善",
+     "gap": 1.6
+    },
+    {
+     "id": "s",
+     "do": "stat",
+     "bare": true,
+     "size": 90,
+     "value": 105,
+     "unit": "亿美元",
+     "at": "105",
+     "land": "105+0.5",
+     "exit": "真金白银+0.5"
+    }
+   ]
+  },
+  {
+   "id": "ch2",
+   "layout": "W",
+   "person": false,
+   "start": 157.15,
+   "end": 162.15,
+   "beats": [
+    {
+     "id": "t",
+     "do": "tweet",
+     "src": "assets/img/tweet-shotwell.png",
+     "text": "承诺给 *200 多万个孩子*每人一股",
+     "at": 0.02,
+     "textAt": "200"
+    }
+   ]
+  },
+  {
+   "id": "ch3",
+   "layout": "W",
+   "person": false,
+   "start": 162.15,
+   "end": 165.2,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/dell1.mp4",
+       "at": 0,
+       "source": "KGW News · 2025-12-02"
+      }
+     ]
+    },
+    {
+     "id": "n",
+     "do": "name",
+     "en": "Michael & Susan Dell",
+     "zh": "戴尔创始人夫妇 · 承诺捐出 62.5 亿美元",
+     "at": "戴尔"
+    }
+   ]
+  },
+  {
+   "id": "by1",
+   "layout": "W",
+   "person": false,
+   "start": 165.2,
+   "end": 171.15,
+   "beats": [
+    {
+     "id": "f",
+     "do": "bubbles",
+     "items": [
+      {
+       "text": "税省了",
+       "at": "税省下来"
+      },
+      {
+       "text": "股票锁住了",
+       "at": "股票锁住"
+      },
+      {
+       "text": "7,200 万个家庭",
+       "at": "7200"
+      }
+     ],
+     "allAt": "家庭"
+    }
+   ]
+  },
+  {
+   "id": "by2",
+   "layout": "W",
+   "person": false,
+   "start": 171.15,
+   "end": 179.6,
+   "beats": [
+    {
+     "id": "a",
+     "do": "screen",
+     "paper": true,
+     "src": "assets/img/rule-p49-49.png",
+     "pos": "50% 37%",
+     "source": "联邦公报 · 财政部规则",
+     "at": 0,
+     "marks": [
+      {
+       "at": "图的",
+       "x": 11.5,
+       "y": 33.7,
+       "w": 75.3,
+       "h": 5.9,
+       "pen": true
+      },
+      {
+       "at": "绑在",
+       "x": 11.5,
+       "y": 40.8,
+       "w": 74.5,
+       "h": 5.9,
+       "pen": true,
+       "text": "自己和这家公司的命运绑在一起"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "by3",
+   "layout": "W",
+   "person": false,
+   "start": 179.6,
+   "end": 184.95,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/podium.mp4",
+       "at": 0,
+       "source": "The White House"
+      },
+      {
+       "video": "assets/footage/clips/belltrump.mp4",
+       "at": "就得先",
+       "source": "The White House",
+       "mediaStart": 1.5
+      }
+     ]
+    },
+    {
+     "id": "t",
+     "do": "silver",
+     "kicker": "批评者担心",
+     "text": "政治护盾？",
+     "dim": true,
+     "at": "严管",
+     "en": "political shield"
+    }
+   ]
+  },
+  {
+   "id": "end1",
+   "layout": "F",
+   "start": 184.95,
+   "end": 187.9,
+   "beats": [
+    {
+     "id": "t",
+     "do": "tally",
+     "total": 100,
+     "hit": 1,
+     "value": 1,
+     "unit": "%",
+     "label": "105 亿美元<br>÷ 马斯克身家",
+     "at": 0.02,
+     "fade": 0.3,
+     "land": 1.2
+    }
+   ]
+  },
+  {
+   "id": "end2",
+   "layout": "W",
+   "person": false,
+   "start": 187.9,
+   "end": 191.76,
+   "beats": [
+    {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/launch.mp4",
+       "at": 0,
+       "source": "SpaceX · Falcon 9"
+      }
+     ]
+    },
+    {
+     "id": "h",
+     "do": "highlight",
+     "text": "这是真慈善，还是*收买*？",
+     "dim": true,
+     "at": "你觉得",
+     "hlAt": "收买"
+    }
+   ]
+  }
+ ]
+}

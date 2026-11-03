@@ -358,6 +358,7 @@
     media.classList.add("rs-screen-media");
     /* 长条截图写 fit: contain，四边留底色，不被裁掉；mark 的坐标都按画框算 */
     if (b.fit) media.style.objectFit = b.fit;
+    if (b.pos) media.style.objectPosition = b.pos;
     if (b.matte) view.style.background = b.matte;
     const focus = (b.focus || []).slice().sort((x, y) => x.at - y.at);
     const labels = (b.labels || []).map((l) => {

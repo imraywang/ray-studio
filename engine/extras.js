@@ -36,6 +36,8 @@
       if (c.video) n.appendChild(media);
       else media.src = c.src;
       if (c.pos) media.style.objectPosition = c.pos;
+      if (c.fit) media.style.objectFit = c.fit;
+      if (c.bg) n.style.background = c.bg;
       if (c.dim) el("div", "rs-x-dim is-on", n).style.opacity = c.dim === true ? 1 : c.dim;
       if (c.source) el("div", "rs-news-src", n, c.source);
       const next = b.clips[i + 1];
@@ -45,7 +47,8 @@
       shots.forEach(({ c, n, media, end }) => {
         const on = t >= c.at && t < end;
         n.style.visibility = on ? "visible" : "hidden";
-        if (on) media.style.transform = `scale(${(1 + 0.04 * clamp((t - c.at) / Math.max(1, (end === Infinity ? ctx.dur : end) - c.at))).toFixed(4)})`;
+        /* 要和抠像对齐的镜头不能推近 */
+        if (on && !c.still) media.style.transform = `scale(${(1 + 0.04 * clamp((t - c.at) / Math.max(1, (end === Infinity ? ctx.dur : end) - c.at))).toFixed(4)})`;
       });
     }, [], []);
   };
@@ -278,10 +281,11 @@
   RS.blocks.bubbles = (b, ctx) => {
     const node = el("div", "rs-x rs-bubs-wrap", ctx.stage);
     const row = el("div", "rs-bubs", node);
+    if (b.size) row.style.setProperty("--bub", b.size);
     const items = b.items.map((it, i) => {
       const arrow = i ? el("i", "rs-arrow", row) : null;
       const cell = el("div", "rs-bub-cell", row);
-      const bub = el("div", "rs-bub", cell, inline(it.text));
+      const bub = el("div", "rs-bub", cell, `<span>${inline(it.text)}</span>`);
       const tag = it.tag ? el("div", "rs-ptag", cell, `<em>${it.tag[0]}</em><b>${it.tag[1]}</b>`) : null;
       return { it, arrow, cell, bub, tag };
     });

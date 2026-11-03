@@ -26,7 +26,9 @@
   "cap-a-color": "#ffffff",
   "cap-a-accent": "#ffffff",
   "cap-a-bg": "rgba(0,0,0,.55)",
-  "cap-a-pad": "6px 18px"
+  "cap-a-pad": "6px 18px",
+  "ok": "#9cc2bf",
+  "no": "#f3f3f0"
  },
  "motion": {
   "bounce": 0.55,

@@ -83,7 +83,7 @@
 
 | 动作 | 什么时候用 | 字段 |
 |---|---|---|
-| `news` | 新闻画面快切，上面的字不动。平均 2–3 秒一个 | `clips: [{ video 或 src, at, source, dim, mediaStart, pos }]`，放在 `W` 版式，其他动作写在它后面才在上层 |
+| `news` | 新闻画面快切，上面的字不动。平均 2–3 秒一个 | `clips: [{ video 或 src, at, source, dim, mediaStart, pos, fit, bg, still }]`（`still` 不推近，要和抠像对齐时写），放在 `W` 版式，其他动作写在它后面才在上层 |
 | `silver` | 章节开头、关键数字 | `text`、`kicker`、`en`、`at`、`dim`（压暗底下的画面） |
 | `big` | 一句结论 | `text`（`*词*` 标重点）或 `sides: [左, 右]`、`kicker`、`size`、`gap`、`at`、`dim`、`onFace` |
 | `brush` | 对立的两个词、结尾问句 | `text` 或 `sides`、`at`、`dim` |
@@ -94,7 +94,7 @@
 | `chart` | 股价和走势，真实数据 | `csv`（第一列日期、最后一列数值）或 `points`；`labels: [{ date 或 i, text, dy }]`、`line: { value, text }`、`segments: [{ at, dur, upto 或 date }]`、`title`、`min`、`max`、`at`。不实时显示数值 |
 | `money` | 钱从一处流到另一处 | `a`、`b`（百分比坐标，没有 `b` 就是一张大钞）、`count`、`stagger`、`dur`、`sign`、`at` |
 | `metro` | 每章开头，走到第几站 | `stations`、`cur`（等于站数时全线点亮）、`barrier: [i, j]`、`kicker`、`title`、`sign`、`at` |
-| `bubbles` | 几步流程，讲到哪个亮哪个 | `items: [{ text, at, tag: [说明, 数字] }]`、`allAt` |
+| `bubbles` | 几步流程，讲到哪个亮哪个 | `items: [{ text, at, tag: [说明, 数字] }]`、`allAt`、`size`（四个以上写 210） |
 | `path` | 流程、路线图，一期里反复用当进度 | `nodes: [{ label, at, showAt }]`、`at` |
 | `pills` | 口播页上的列举 | `items: [{ text, kind: "ok"/"no", at }]`、`left`、`top` |
 | `behind` | 开场关键词放在人身后 | `items: [{ text, x, y, size, at }]`、`size`、`at`。放头两侧，中间那个字一定被挡住 |
@@ -110,7 +110,7 @@
 | `ruler` | 历史段落 | `years: [起, 止]`、`step`、`stops: [{ year, at }]`、`at` |
 | `track` | 规则的时间限制 | `label`、`pct`、`pins: [{ pct, text, at }]`、`fill`、`dur`、`at` |
 
-`screen` 还有两种写法：`"paper": true` 是木桌上的原文纸面，配 `marks` 里的 `"pen": true` 做荧光高亮；`"above": "obsidian.md"` 是清单片截图卡上方的出处行。
+`screen` 还有两种写法：`"paper": true` 是木桌上的原文纸面，配 `marks` 里的 `"pen": true` 做荧光高亮，`pos` 决定显示页面的哪一段（`"50% 58%"`）；`"above": "obsidian.md"` 是清单片截图卡上方的出处行。
 
 ## 自动带的
 
@@ -119,4 +119,4 @@
 
 ## 示例
 
-`examples/story-ladder-full.json` 是一条完整的 95.8 秒片子，写新片前先读一遍。
+`examples/story-ladder-full.json` 是一条完整的 95.8 秒片子，写新片前先读一遍。横屏新闻科普看 `examples/spacex-xiaolin.json`（3 分 12 秒）。
