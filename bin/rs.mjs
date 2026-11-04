@@ -189,7 +189,8 @@ function load(dir) {
       if (out.exit !== undefined && out.at !== undefined && out.exit - out.at < 1) warnings.push(`${raw.id}.${b.id}：只停留 ${(out.exit - out.at).toFixed(2)} 秒`);
       return out;
     });
-    const inScene = caps.filter((c) => c.start >= start - 0.02 && c.start < end - 0.02);
+    // 话还没说完就切场的字幕，下一场接着显示
+    const inScene = caps.filter((c) => c.start < end - 0.02 && (c.start >= start - 0.02 || c.end > start + 0.02));
     const captions = inScene.map((c, i) => ({
       text: c.text,
       accent: c.accent,
