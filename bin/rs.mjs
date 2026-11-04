@@ -283,6 +283,10 @@ function sfxOf(scene, spec) {
     if (b.do === "highlight") add("click", b.hlAt ?? b.at + 0.6, 0.34);
     if (b.do === "chart") for (const l of b.labels || []) if (l.at !== undefined) add("click", l.at, 0.34);
     if (["bubbles", "pills", "logos", "thread", "bars"].includes(b.do)) for (const x of b.items) add("click", x.at, 0.36);
+    if (b.do === "tower") {
+      for (const x of b.items) add("click", x.at, 0.36);
+      for (const x of b.states || []) add("click", x.at, 0.36);
+    }
     if (b.do === "path") for (const x of b.nodes) add("click", x.at, 0.36);
     if (b.do === "percolate" && b.swellAt !== undefined) add("swell", b.swellAt, 0.5);
     if (b.do === "sheet") for (const f of b.flags || []) add("click", f.at, 0.42);

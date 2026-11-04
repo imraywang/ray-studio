@@ -180,6 +180,7 @@
     }
     const line = svgEl("polyline", { points: xy.map((p) => p.map((v) => v.toFixed(1)).join(",")).join(" "), class: "rs-chart-line" }, svg);
     line.style.strokeDasharray = cum.at(-1);
+    const ring = svgEl("circle", { r: 9, class: "rs-chart-ring" }, svg);
     const dot = svgEl("circle", { r: 9, class: "rs-chart-dot" }, svg);
     const labels = (b.labels || []).map((l) => {
       const n = el("div", "rs-chart-tag", plot, l.text);
@@ -210,7 +211,18 @@
       line.style.strokeDashoffset = (cum.at(-1) - p.len).toFixed(1);
       dot.setAttribute("cx", p.x.toFixed(1));
       dot.setAttribute("cy", p.y.toFixed(1));
-      labels.forEach(({ l, n }) => (n.style.opacity = f >= l.i ? 1 : 0));
+      labels.forEach(({ l, n }) => (n.style.opacity = l.at !== undefined ? prog(t, l.at, l.at + 0.2) : f >= l.i ? 1 : 0));
+      /* 线头一圈圈往外扩，线停下来时画面还在说这个点 */
+      const pulse = ((t - b.at) % 1.3) / 1.3;
+      ring.setAttribute("cx", p.x.toFixed(1));
+      ring.setAttribute("cy", p.y.toFixed(1));
+      ring.setAttribute("r", (9 + 34 * pulse).toFixed(1));
+      ring.style.opacity = (0.7 * (1 - pulse)).toFixed(3);
+      if (b.zoom) {
+        const z = lerp(1, b.zoom.scale ?? 1.2, ease.inOut(prog(t, b.zoom.at, b.zoom.at + (b.zoom.dur ?? 2))));
+        plot.style.transformOrigin = `${(p.x / W) * 100}% ${(p.y / H) * 100}%`;
+        plot.style.transform = `scale(${z.toFixed(4)})`;
+      }
     }, [], [box]);
   };
 
@@ -277,26 +289,29 @@
     }, [], [hd]);
   };
 
-  /* 玻璃气泡：讲到哪个哪个亮，其余压暗；箭头从前一个长到后一个，下面可挂价签 */
+  /* 玻璃气泡：讲到哪个哪个亮，讲过的退一点但还看得见；tone 上色，sub 是小字，via 是箭头上的字，下面可挂价签 */
   RS.blocks.bubbles = (b, ctx) => {
     const node = el("div", "rs-x rs-bubs-wrap", ctx.stage);
     const row = el("div", "rs-bubs", node);
     if (b.size) row.style.setProperty("--bub", b.size);
     const items = b.items.map((it, i) => {
       const arrow = i ? el("i", "rs-arrow", row) : null;
+      const via = it.via ? el("span", "rs-arrow-via", row, it.via) : null;
       const cell = el("div", "rs-bub-cell", row);
-      const bub = el("div", "rs-bub", cell, `<span>${inline(it.text)}</span>`);
+      const bub = el("div", `rs-bub${it.tone ? ` is-${it.tone}` : ""}`, cell, `<span>${inline(it.text)}${it.sub ? `<small>${it.sub}</small>` : ""}</span>`);
       const tag = it.tag ? el("div", "rs-ptag", cell, `<em>${it.tag[0]}</em><b>${it.tag[1]}</b>`) : null;
-      return { it, arrow, cell, bub, tag };
+      return { it, arrow, via, cell, bub, tag };
     });
     return simple(node, (t) => {
       const cur = items.reduce((v, x, i) => (t >= x.it.at ? i : v), -1);
       const all = b.allAt !== undefined && t >= b.allAt;
       items.forEach((x, i) => {
         const u = t - x.it.at;
-        x.cell.style.opacity = u <= 0 ? 0 : clamp(u / 0.2) * (all || i === cur ? 1 : 0.3);
-        x.cell.style.scale = u <= 0 ? 0.9 : lerp(0.9, 1, spring(u, 16, 8)).toFixed(4);
+        const lit = all || i === cur;
+        x.cell.style.opacity = u <= 0 ? 0 : clamp(u / 0.2) * (lit ? 1 : 0.62);
+        x.cell.style.scale = u <= 0 ? 0.9 : (lerp(0.9, 1, spring(u, 16, 8)) * (lit ? 1 + 0.018 * Math.sin(u * 2.2) : 0.96)).toFixed(4);
         if (x.arrow) growX(x.arrow, t, x.it.at - 0.3, 0.3);
+        if (x.via) x.via.style.opacity = prog(t, x.it.at - 0.1, x.it.at + 0.15);
         if (x.tag) rise(x.tag, t, x.it.at + 0.3);
       });
     }, [], []);
@@ -400,6 +415,59 @@
         val.textContent = it.text ?? fmt(it.value * k, it.digits ?? 0);
       });
     }, [], [box]);
+  };
+
+  /* 高柱：差距要一眼看出来。按真实比例，gain 是高出来的那段，右边跟着口播一条条列；ok 那条出现时涨幅变色，前面的 no 划掉 */
+  RS.blocks.tower = (b, ctx) => {
+    const node = el("div", "rs-x rs-tower-wrap", ctx.stage);
+    const plot = el("div", "rs-tower", node);
+    const max = Math.max(...b.items.map((x) => x.value));
+    const items = b.items.map((it, i) => {
+      const col = el("div", "rs-tower-col", plot);
+      col.style.setProperty("--i", i);
+      const bar = el("div", "rs-tower-bar", col);
+      bar.style.height = `calc(var(--u) * ${Math.max(5, (340 * it.value) / max).toFixed(1)})`;
+      const gain = i === b.items.length - 1 ? el("i", "", bar) : null;
+      const low = Math.max(5, (340 * b.items[0].value) / max);
+      if (gain) gain.style.bottom = `calc(var(--u) * ${low.toFixed(1)})`;
+      const val = el("b", "rs-tower-v", col, it.text);
+      val.style.bottom = `calc(var(--u) * ${(Math.max(5, (340 * it.value) / max) + 12).toFixed(1)})`;
+      el("span", "rs-tower-l", col, it.label);
+      return { it, col, bar, gain, val };
+    });
+    const brk = el("div", "rs-tower-brk", plot);
+    brk.style.height = `calc(var(--u) * ${(340 - Math.max(5, (340 * b.items[0].value) / max)).toFixed(1)})`;
+    const side = el("div", "rs-tower-side", plot);
+    const states = (b.states || []).map((x) => ({ x, n: el("div", `rs-tower-s is-${x.kind || "no"}`, side, inline(x.text)) }));
+    const flip = states.find((s) => s.x.kind === "ok");
+    return simple(node, (t) => {
+      items.forEach(({ it, col, bar, gain, val }) => {
+        col.style.opacity = t < it.at ? 0 : 1;
+        const k = ease.out3(prog(t, it.at, it.at + 0.9));
+        bar.style.transform = `scaleY(${k.toFixed(4)})`;
+        landIn(val, t, it.at + 0.5, 1.2);
+        if (gain) gain.style.setProperty("--flip", flip ? prog(t, flip.x.at, flip.x.at + 0.35).toFixed(3) : 0);
+      });
+      if (states[0]) {
+        const k = ease.out3(prog(t, states[0].x.at - 0.1, states[0].x.at + 0.3));
+        brk.style.opacity = k > 0 ? 1 : 0;
+        brk.style.transform = `scaleY(${k.toFixed(4)})`;
+      }
+      states.forEach(({ x, n }) => {
+        rise(n, t, x.at);
+        if (x.kind !== "ok" && flip) n.classList.toggle("is-gone", t >= flip.x.at);
+      });
+    }, [], [plot]);
+  };
+
+  /* 水印大字：画板背后的一个词，极慢地漂。写在其他动作前面 */
+  RS.blocks.word = (b, ctx) => {
+    const node = el("div", "rs-word", ctx.stage, `<span>${b.text}</span>`);
+    return simple(node, (t) => {
+      const u = t - b.at;
+      node.style.opacity = ease.out3(prog(t, b.at, b.at + 0.6));
+      node.firstChild.style.transform = `translateX(${(u * 9).toFixed(2)}px) scale(${(1 + u * 0.006).toFixed(4)})`;
+    }, [], []);
   };
 
   /* 渗流网格：贯穿全片的示意图。种子固定，每条边一个固定的数，打通比例 p 时小于 p 的边是通的 */
@@ -600,6 +668,7 @@
     const bar = el("div", "rs-trk-bar", box);
     const fill = el("i", "", bar);
     fill.style.width = `${b.pct ?? 100}%`;
+    const note = b.note ? el("div", "rs-trk-note", box, inline(b.note.text)) : null;
     const pins = (b.pins || []).map((p) => {
       const n = el("div", "rs-trk-pin", bar, `<span>${p.text}</span>`);
       n.style.left = `${p.pct}%`;
@@ -607,8 +676,16 @@
     });
     return simple(node, (t) => {
       focusIn(box, t, b.at, { dur: 0.4, blur: 8, y: 14, scale: 1 });
-      growX(fill, t, b.fill ?? b.at + 0.3, b.dur ?? 1);
+      /* fills 分段走：先到第一个刻度，再到第二个 */
+      if (b.fills) {
+        let x = 0;
+        b.fills.forEach((f) => {
+          if (t >= f.at) x = lerp(x, f.pct / (b.pct ?? 100), ease.out3(prog(t, f.at, f.at + (f.dur ?? 0.7))));
+        });
+        fill.style.transform = `scaleX(${x.toFixed(4)})`;
+      } else growX(fill, t, b.fill ?? b.at + 0.3, b.dur ?? 1);
       pins.forEach(({ p, n }) => rise(n, t, p.at));
+      if (note) rise(note, t, b.note.at);
     }, [], [box]);
   };
 })(window.RS);

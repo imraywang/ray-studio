@@ -91,15 +91,17 @@
 | `shrink` | 基本归零 | `label`、`value`、`pct`、`at`、`land` |
 | `pie` | 大比例。很小的比例用 `tally` | `value`、`label`、`digits`、`dur`、`at` |
 | `stat` | 一个巨大的数字 | `value`、`unit`（在右下角）、`prefix`、`digits`、`key`、`note`、`bare`、`size`、`at`、`countAt`、`land` |
-| `chart` | 股价和走势，真实数据 | `csv`（第一列日期、最后一列数值）或 `points`；`labels: [{ date 或 i, text, dy }]`、`line: { value, text }`、`segments: [{ at, dur, upto 或 date }]`、`title`、`min`、`max`、`at`。不实时显示数值 |
+| `chart` | 股价和走势，真实数据 | `csv`（第一列日期、最后一列数值）或 `points`；`labels: [{ date 或 i, text, dy, at }]`、`zoom: { at, dur, scale }`（往线头推近）、`line: { value, text }`、`segments: [{ at, dur, upto 或 date }]`、`title`、`min`、`max`、`at`。不实时显示数值 |
 | `money` | 钱从一处流到另一处 | `a`、`b`（百分比坐标，没有 `b` 就是一张大钞）、`count`、`stagger`、`dur`、`sign`、`at` |
 | `metro` | 每章开头，走到第几站 | `stations`、`cur`（等于站数时全线点亮）、`barrier: [i, j]`、`kicker`、`title`、`sign`、`at` |
-| `bubbles` | 几步流程，讲到哪个亮哪个 | `items: [{ text, at, tag: [说明, 数字] }]`、`allAt`、`size`（四个以上写 210） |
+| `bubbles` | 几步流程，讲到哪个亮哪个 | `items: [{ text, at, tone, sub, via, tag: [说明, 数字] }]`、`allAt`、`size`（四个以上写 210）。`tone` 上色：`slate`、`green`、`gold`、`red`、`blue`；`sub` 是气泡内小字，`via` 是箭头上的字 |
 | `path` | 流程、路线图，一期里反复用当进度 | `nodes: [{ label, at, showAt }]`、`at` |
 | `pills` | 口播页上的列举 | `items: [{ text, kind: "ok"/"no", at }]`、`left`、`top` |
 | `behind` | 开场关键词放在人身后 | `items: [{ text, x, y, size, at }]`、`size`、`at`。放头两侧，中间那个字一定被挡住 |
 | `term` | 名词字卡，整屏 | `text`（放原词）、`zh`、`at` |
 | `bars` | 几个数字比大小 | `items: [{ label, value, text, hit, at }]`、`max` |
+| `tower` | 差距悬殊，要一眼看出来，按真实比例画高柱 | `items: [{ label, value, text, at }]`、`states: [{ text, kind: "no"/"ok", at }]`（右边逐条列；`ok` 出现时涨幅变色，前面的 `no` 划掉） |
+| `word` | 画板背后的水印大字，写在其他动作前面 | `text`、`at` |
 | `percolate` | 贯穿全片的网格示意 | `cols`、`rows`、`seed`、`gas`、`showP`、`start`、`phases: [{ at, to, p }]`（`p` 可写 `"critical"`、`"critical-0.01"`）、`swellAt`、`at` |
 | `numcard` | 清单每项开头 | `n`、`name`、`top`（压在衣服上，看脸的位置调）、`at` |
 | `logos` | 一排 logo 弹出 | `items: [{ src, label, at }]`、`top` |
@@ -108,7 +110,7 @@
 | `tweet` | 推文截图加译文 | `src`、`text`、`textAt`、`at` |
 | `name` | 新人物出场 | `en`、`zh`、`nick`、`img`、`left`、`top`、`at` |
 | `ruler` | 历史段落 | `years: [起, 止]`、`step`、`stops: [{ year, at }]`、`at` |
-| `track` | 规则的时间限制 | `label`、`pct`、`pins: [{ pct, text, at }]`、`fill`、`dur`、`at` |
+| `track` | 规则的时间限制 | `label`、`pct`、`pins: [{ pct, text, at }]`、`fill`、`dur`、`fills: [{ at, pct, dur }]`（分段走）、`note: { text, at }`、`at` |
 
 `screen` 还有两种写法：`"paper": true` 是木桌上的原文纸面，配 `marks` 里的 `"pen": true` 做荧光高亮，`pos` 决定显示页面的哪一段（`"50% 58%"`）；`"above": "obsidian.md"` 是清单片截图卡上方的出处行。
 

@@ -358,15 +358,18 @@
      "items": [
       {
        "text": "为什么送",
-       "at": 0.05
+       "at": 0.05,
+       "tone": "gold"
       },
       {
        "text": "怎么送",
-       "at": "股票怎么送"
+       "at": "股票怎么送",
+       "tone": "green"
       },
       {
        "text": "有先例吗",
-       "at": "历史上"
+       "at": "历史上",
+       "tone": "blue"
       }
      ],
      "allAt": "干过吗+0.2"
@@ -550,12 +553,14 @@
      "do": "bubbles",
      "items": [
       {
-       "text": "只能买<br>*指数基金*",
-       "at": "指数基金-0.2"
+       "text": "只能买<br>指数基金",
+       "at": "指数基金-0.2",
+       "tone": "green"
       },
       {
-       "text": "18 岁前<br>*取不出来*",
-       "at": "18岁"
+       "text": "18 岁前<br>取不出来",
+       "at": "18岁",
+       "tone": "red"
       }
      ],
      "allAt": "取不出来"
@@ -618,25 +623,41 @@
    "end": 71,
    "beats": [
     {
+     "id": "w",
+     "do": "word",
+     "text": "FLOW",
+     "at": 0
+    },
+    {
      "id": "f",
      "do": "bubbles",
      "size": 210,
      "items": [
       {
        "text": "马斯克",
-       "at": "马斯克"
+       "sub": "SPACEX 股票",
+       "at": "马斯克",
+       "tone": "slate"
       },
       {
        "text": "慈善机构",
-       "at": "慈善机构"
+       "sub": "基金会",
+       "via": "捐",
+       "at": "慈善机构",
+       "tone": "green"
       },
       {
        "text": "财政部",
-       "at": "财政部"
+       "sub": "批准",
+       "via": "报批",
+       "at": "财政部",
+       "tone": "blue"
       },
       {
-       "text": "孩子的账户",
+       "text": "孩子的<br>账户",
+       "via": "转入",
        "at": "每个孩子",
+       "tone": "gold",
        "tag": [
         "×",
         "7,200 万"
@@ -649,12 +670,12 @@
      "id": "m",
      "do": "money",
      "a": [
-      14,
-      42
+      62,
+      40
      ],
      "b": [
       86,
-      42
+      40
      ],
      "at": "转进",
      "count": 6,
@@ -698,8 +719,14 @@
    "end": 89.25,
    "beats": [
     {
-     "id": "b",
-     "do": "bars",
+     "id": "w",
+     "do": "word",
+     "text": "TAX",
+     "at": 0
+    },
+    {
+     "id": "t",
+     "do": "tower",
      "items": [
       {
        "label": "买入成本",
@@ -711,29 +738,22 @@
        "label": "现在的市值",
        "value": 10000,
        "text": "1 亿",
-       "at": "1亿",
-       "hit": true
+       "at": "1亿"
       }
-     ]
-    },
-    {
-     "id": "p",
-     "do": "pills",
-     "top": 800,
-     "left": 330,
-     "items": [
+     ],
+     "states": [
       {
        "text": "卖掉：9,900 万涨幅要交税",
        "kind": "no",
        "at": "9900"
       },
       {
-       "text": "捐掉：不算卖出",
+       "text": "捐掉：不算卖出，不用交",
        "kind": "ok",
        "at": "不算卖出"
       },
       {
-       "text": "还能抵扣 1 亿",
+       "text": "还能按 1 亿抵扣收入",
        "kind": "ok",
        "at": "市值"
       }
@@ -798,9 +818,14 @@
      "do": "chart",
      "csv": "assets/spcx.csv",
      "max": 222,
-     "min": 130,
+     "min": 112,
      "title": "SPCX 日收盘价（美元，盈透证券）",
      "at": 0.02,
+     "zoom": {
+      "at": "一股",
+      "dur": 2.4,
+      "scale": 1.1
+     },
      "segments": [
       {
        "at": 0.3,
@@ -823,6 +848,12 @@
        "date": "2026-10-16",
        "text": "10-16 收 146.03",
        "dy": 34
+      },
+      {
+       "date": "2026-10-16",
+       "text": "≈ 1000 元人民币",
+       "dy": 84,
+       "at": "1000"
       }
      ]
     }
@@ -838,10 +869,18 @@
     {
      "id": "t",
      "do": "track",
-     "label": "锁定期，哪个先到算哪个",
+     "label": "锁定期",
      "pct": 100,
-     "fill": "锁五年-0.2",
-     "dur": 2,
+     "fills": [
+      {
+       "at": "锁五年-0.2",
+       "pct": 45
+      },
+      {
+       "at": "17岁",
+       "pct": 80
+      }
+     ],
      "at": 0.02,
      "pins": [
       {
@@ -854,7 +893,11 @@
        "text": "17 岁那年年底",
        "at": "17岁"
       }
-     ]
+     ],
+     "note": {
+      "text": "哪个*先到*算哪个",
+      "at": "哪个先到"
+     }
     }
    ]
   },
@@ -1187,22 +1230,49 @@
    "end": 148.55,
    "beats": [
     {
+     "id": "w",
+     "do": "word",
+     "text": "1992",
+     "at": 0
+    },
+    {
      "id": "f",
      "do": "bubbles",
      "items": [
       {
        "text": "凭证",
-       "at": "凭证"
+       "sub": "VOUCHER",
+       "at": "凭证",
+       "tone": "slate"
       },
       {
        "text": "卖掉换钱",
-       "at": "卖了换钱"
+       "sub": "CASH",
+       "at": "卖了换钱",
+       "tone": "gold"
       },
       {
        "text": "企业管理层",
-       "at": "企业管理层"
+       "sub": "股份落到这里",
+       "at": "企业管理层",
+       "tone": "red"
       }
      ]
+    },
+    {
+     "id": "r",
+     "do": "ruler",
+     "years": [
+      1990,
+      2030
+     ],
+     "stops": [
+      {
+       "year": 1992,
+       "at": 0
+      }
+     ],
+     "at": 0
     }
    ]
   },
@@ -1214,12 +1284,44 @@
    "end": 152.6,
    "beats": [
     {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/nyse1.mp4",
+       "at": 0,
+       "source": "AFP",
+       "mediaStart": 0
+      }
+     ]
+    },
+    {
      "id": "t",
      "do": "silver",
      "kicker": "这一次",
      "text": "锁定期",
      "en": "no early selling",
+     "dim": true,
      "at": 0.05
+    },
+    {
+     "id": "r",
+     "do": "ruler",
+     "years": [
+      1990,
+      2030
+     ],
+     "stops": [
+      {
+       "year": 1992,
+       "at": 0
+      },
+      {
+       "year": 2026,
+       "at": 0.1
+      }
+     ],
+     "at": 0
     }
    ]
   },
@@ -1231,12 +1333,25 @@
    "end": 157.15,
    "beats": [
     {
+     "id": "n",
+     "do": "news",
+     "clips": [
+      {
+       "video": "assets/footage/clips/launch.mp4",
+       "at": 0,
+       "source": "SpaceX · Falcon 9",
+       "mediaStart": 1
+      }
+     ]
+    },
+    {
      "id": "b",
      "do": "brush",
      "sides": [
       "慈善",
       "收买"
      ],
+     "dim": 0.6,
      "at": "慈善",
      "gap": 1.6
     },
@@ -1310,15 +1425,18 @@
      "items": [
       {
        "text": "税省了",
-       "at": "税省下来"
+       "at": "税省下来",
+       "tone": "gold"
       },
       {
        "text": "股票锁住了",
-       "at": "股票锁住"
+       "at": "股票锁住",
+       "tone": "slate"
       },
       {
-       "text": "7,200 万个家庭",
-       "at": "7200"
+       "text": "7,200 万<br>个家庭",
+       "at": "7200",
+       "tone": "red"
       }
      ],
      "allAt": "家庭"
