@@ -334,7 +334,7 @@ function indexHtml(doc, scene) {
   const landMedia = isA
     ? `<div id="face-wrap"><video id="fa" class="clip" src="${f.wide}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="1"></video></div>`
     : noPerson ? "" : personClip;
-  const half = doc.styleSpec.person === "half" && scene.layout === "S";
+  const half = doc.styleSpec.person === "half" && scene.layout === "S" && doc.person !== "card"; // person: "card" 换成探头卡，字幕位置不变
   const media = land ? landMedia : scene.layout === "F" || scene.layout === "W" ? "" : half
     ? `<div id="half"><video id="hv" class="clip" src="${f.pop}" muted playsinline data-start="0" data-duration="${live}" data-media-start="${scene.start}" data-track-index="1"></video>${tail ? `<img id="half-still" class="clip" src="${f.endStill}" alt="" data-start="${tail.at}" data-duration="${tail.len}" data-track-index="1" />` : ""}</div>`
     : isA
