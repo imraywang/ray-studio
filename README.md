@@ -9,7 +9,7 @@
 ```bash
 node bin/rs.mjs styles                       # 列出可选风格
 node bin/rs.mjs new    <英文短名>            # 建工程
-node bin/rs.mjs check  <工程目录>            # 检查台词能否对上、时间是否越界
+node bin/rs.mjs check  <工程目录>            # 检查台词和时间，再逐场跑 hyperframes check；--fast 只查声明文件
 node bin/rs.mjs frames <工程目录> [场景]     # 抽关键帧拼成一张图
 node bin/rs.mjs render <工程目录> [场景...]  # 只重渲改过的场景，再拼起来试看
 node bin/rs.mjs final  <工程目录>            # 画面按帧拼接，整条音频单独混，统一响度

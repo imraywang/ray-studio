@@ -78,6 +78,8 @@ node $RS/bin/rs.mjs check <工程>
 node $RS/bin/rs.mjs frames <工程> [场景]
 ```
 
+`check` 会逐场跑 `hyperframes check`，15 场约 1 分钟；改声明文件时想快点查，加 `--fast` 或只写场景名。错误要修：对比度报错先看帧，是真看不清就改，叠在有字的截图上那种也算。只有上游确认无害的（`rs.mjs` 的 `HF_DOWNGRADE`）才算警告。
+
 用 Read 看 `renders/frames-<场景>.jpg`，查：
 - 字有没有压住、溢出、单字掉行
 - 卡片是否碰标题和字幕，头顶是否在窗外

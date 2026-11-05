@@ -2,7 +2,7 @@
 // rs：ray-studio 命令行。声明文件 studio.json → 生成 HyperFrames 工程 → 检查、看帧、按场景渲染。
 //   rs new    <英文短名> [--dir 父目录]  建工程：字体、音效和声明文件骨架
 //   rs styles                           列出可选风格
-//   rs check  <工程>                    检查声明文件（台词能否对上、时间是否越界）
+//   rs check  <工程> [场景...] [--fast]  官方检查逐场跑，--fast 只查声明文件。检查声明文件（台词能否对上、时间是否越界）
 //   rs frames <工程> [场景...]          抽关键帧拼成一张图，给 Agent 自己看
 //   rs render <工程> [场景...] [-q looks|delivery]  只重渲改过的场景，再拼起来试看
 //   rs final  <工程> [-q delivery]      各场景画面按帧拼接，整条音频单独混，响度统一
@@ -451,12 +451,39 @@ function cmdNew(slug, parent) {
   console.log(dir);
 }
 
-function cmdCheck(dir) {
-  const { errors, warnings, scenes } = load(dir);
+// 引擎的 CSS 挂在场景根元素的 class 上。上游说这已不影响渲染（#1886），只算警告，免得每场都报错盖住真问题
+const HF_DOWNGRADE = new Set(["subcomposition_root_styled_by_class"]);
+
+// 官方检查按场景跑：工程里同一时间只有一场
+function hfCheck(dir, doc, scene) {
+  writeProject(dir, doc, scene);
+  const r = spawnSync(HF, ["check", dir, "--json"], { encoding: "utf8", maxBuffer: 1 << 28 });
+  let report;
+  try {
+    report = JSON.parse(r.stdout);
+  } catch {
+    return { errors: [`${scene.id}：hyperframes check 没跑完\n${(r.stderr || r.stdout || "").slice(-800)}`], warnings: 0 };
+  }
+  const findings = ["lint", "runtime", "layout", "contrast", "craft", "audio"].flatMap((k) => report[k]?.findings ?? []);
+  const isError = (f) => f.severity === "error" && !HF_DOWNGRADE.has(f.code);
+  const errors = findings.filter(isError).map((f) => `${scene.id}：[${f.code}] ${f.message}${f.selector ? `（${f.selector}）` : ""}`);
+  return { errors, warnings: findings.filter((f) => !isError(f) && f.severity !== "info").length };
+}
+
+function cmdCheck(dir, wanted, fast) {
+  const { doc, errors, warnings, scenes } = load(dir);
   for (let i = 1; i < scenes.length; i++) if (Math.abs(scenes[i].start - scenes[i - 1].end) > 0.001) errors.push(`${scenes[i].id}：和上一场之间有缺口`);
+  let hfWarnings = 0;
+  if (!fast && errors.length === 0) {
+    for (const scene of pick(scenes, wanted)) {
+      const r = hfCheck(dir, doc, scene);
+      errors.push(...r.errors);
+      hfWarnings += r.warnings;
+    }
+  }
   warnings.forEach((w) => console.log(`提醒  ${w}`));
   errors.forEach((e) => console.log(`错误  ${e}`));
-  console.log(`${scenes.length} 个场景，共 ${scenes.at(-1).end.toFixed(2)} 秒，${errors.length} 个错误，${warnings.length} 个提醒`);
+  console.log(`${scenes.length} 个场景，共 ${scenes.at(-1).end.toFixed(2)} 秒，${errors.length} 个错误，${warnings.length} 个提醒${fast ? "（跳过了官方检查）" : `，官方检查另有 ${hfWarnings} 个警告`}`);
   return errors.length === 0;
 }
 
@@ -608,8 +635,8 @@ if (cmd === "new") {
 const dir = path.resolve(target);
 const qi = rest.indexOf("-q");
 const quality = qi >= 0 ? rest[qi + 1] : cmd === "final" ? "delivery" : "looks";
-const names = rest.filter((v, i) => v !== "-q" && (qi < 0 || i !== qi + 1));
-if (cmd === "check") process.exit(cmdCheck(dir) ? 0 : 1);
+const names = rest.filter((v, i) => v !== "-q" && v !== "--fast" && (qi < 0 || i !== qi + 1));
+if (cmd === "check") process.exit(cmdCheck(dir, names, rest.includes("--fast")) ? 0 : 1);
 else if (cmd === "frames") cmdFrames(dir, names);
 else if (cmd === "render") cmdRender(dir, names, quality);
 else if (cmd === "final") cmdFinal(dir, quality);
