@@ -106,7 +106,10 @@ function alignCaptions(list, idx, errors, oneWord) {
   return out;
 }
 
-const listStyles = () => fs.readdirSync(path.join(ROOT, "styles")).map((f) => f.replace(/\.json$/, "")).sort();
+// 风格在两处找：自己建的放 ~/.config/ray-studio/styles/（升级仓库不会冲掉），同名时它优先；其余用仓库自带的
+const STYLE_DIRS = [path.join(process.env.HOME, ".config/ray-studio/styles"), path.join(ROOT, "styles")];
+const styleFileOf = (id) => STYLE_DIRS.map((d) => path.join(d, `${id}.json`)).find((f) => fs.existsSync(f));
+const listStyles = () => [...new Set(STYLE_DIRS.filter((d) => fs.existsSync(d)).flatMap((d) => fs.readdirSync(d)).filter((f) => f.endsWith(".json")).map((f) => f.replace(/\.json$/, "")))].sort();
 
 const TIME_KEYS = new Set(["at", "countAt", "land", "exit", "climb", "lock", "from", "to", "hold", "lit", "burst", "dive", "kwAt", "subAt", "coverAt", "checkAt", "tagAt", "go", "yank", "out", "fade", "headTo", "hlAt", "textAt", "allAt", "showAt", "fill"]);
 
@@ -119,8 +122,8 @@ function load(dir) {
   if (TRY.style) doc.style = TRY.style;
   if (TRY.aspect) doc.aspect = TRY.aspect;
   if (!SIZE[doc.aspect]) die(`studio.json 要写 "aspect"：portrait 或 landscape`);
-  const styleFile = path.join(ROOT, "styles", `${doc.style}.json`);
-  if (!doc.style || !fs.existsSync(styleFile)) die(`studio.json 要写 "style"，可选：${listStyles().join("、")}`);
+  const styleFile = doc.style && styleFileOf(doc.style);
+  if (!styleFile) die(`studio.json 要写 "style"，可选：${listStyles().join("、")}`);
   doc.styleSpec = JSON.parse(fs.readFileSync(styleFile, "utf8"));
   const idx = indexWords(JSON.parse(fs.readFileSync(path.join(dir, doc.words), "utf8")));
   const errors = [];
@@ -658,7 +661,7 @@ function cmdFinal(dir, quality) {
 
 const argv = process.argv.slice(2);
 // 素材准备的脚本从这里进，用同一个 Python 环境。放在最前面，参数原样传过去
-const SCRIPTS = { prep: "prep_koubo.py", words: "words.py", voice: "voice.py", matte: "matte.py" };
+const SCRIPTS = { prep: "prep_koubo.py", words: "words.py", voice: "voice.py", matte: "matte.py", ref: "ref_style.py" };
 if (SCRIPTS[argv[0]]) process.exit(spawnSync(PY, [path.join(ROOT, "scripts", SCRIPTS[argv[0]]), ...argv.slice(1)], { stdio: "inherit" }).status ?? 1);
 for (const key of ["style", "aspect"]) {
   const i = argv.indexOf(`--${key}`);
@@ -666,14 +669,14 @@ for (const key of ["style", "aspect"]) {
 }
 if (argv[0] === "styles") {
   for (const id of listStyles()) {
-    const st = JSON.parse(fs.readFileSync(path.join(ROOT, "styles", `${id}.json`), "utf8"));
-    console.log(`${id}  ${st.name}：${st.summary}`);
+    const st = JSON.parse(fs.readFileSync(styleFileOf(id), "utf8"));
+    console.log(`${id}  ${st.name}：${st.summary}${styleFileOf(id).startsWith(ROOT) ? "" : "（自己建的）"}`);
   }
   process.exit(0);
 }
 if (argv[0] === "doctor") cmdDoctor();
 const [cmd, target, ...rest] = argv;
-if (!cmd || !target) die("用法：rs doctor | rs styles | rs new <短名> | rs prep|words|voice|matte <工程目录> ... | rs check|frames|render|final|qa|review <工程目录> [场景...] [-q looks|delivery]");
+if (!cmd || !target) die("用法：rs doctor | rs styles | rs new <短名> | rs prep|words|voice|matte <工程目录> ... | rs ref <参考视频> | rs check|frames|render|final|qa|review <工程目录> [场景...] [-q looks|delivery]");
 if (cmd === "new") {
   const di = rest.indexOf("--dir");
   cmdNew(target, di >= 0 ? path.resolve(rest[di + 1]) : path.join(process.env.HOME, "Movies/ray-studio"));

@@ -32,7 +32,7 @@ node $RS/bin/rs.mjs styles             # 看有哪些风格
 node $RS/bin/rs.mjs new <英文短名>
 ```
 
-`studio.json` 必须写 `style` 和 `aspect`，不留默认值。作者没说时按发布平台定：YouTube、B 站、课程用 `landscape`，抖音、小红书、视频号用 `portrait`；界面录屏多的片子优先横屏，竖屏看不清字。风格拿不准就推荐两种，用下面的命令各出一张帧给 作者选：
+`studio.json` 必须写 `style` 和 `aspect`，不留默认值。作者没说时按发布平台定：YouTube、B 站、课程用 `landscape`，抖音、小红书、视频号用 `portrait`；界面录屏多的片子优先横屏，竖屏看不清字。作者指定了一条参考片或一种没有的风格时，按 [new-style.md](references/new-style.md) 新建一个风格，不要拿最接近的现成风格凑合。风格拿不准就推荐两种，用下面的命令各出一张帧给 作者选：
 
 ```bash
 node $RS/bin/rs.mjs frames <工程> <场景> --style xiaolin
@@ -130,7 +130,7 @@ node $RS/bin/rs.mjs review <工程> [--tailnet]    # 第二轮起加 --no-open�
 
 ## 风格和版式
 
-风格在 `styles/*.json`：颜色、字体、动作性格（回弹、余震、呼吸）、人像放法、混音。动作只有一份，换风格不用改声明文件的结构。
+风格在 `styles/*.json`，自己建的在 `~/.config/ray-studio/styles/`：颜色、字体、动作性格（回弹、余震、呼吸）、人像放法、混音。动作只有一份，换风格不用改声明文件的结构。
 
 | 风格 | 适合 |
 |---|---|

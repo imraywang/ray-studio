@@ -53,6 +53,7 @@ node bin/rs.mjs review "$P"                                # 打开审片页
 ```bash
 node bin/rs.mjs doctor                       # 自检依赖
 node bin/rs.mjs styles                       # 列出可选风格
+node bin/rs.mjs ref    <参考视频>            # 看一条参考片的配色和节奏，新建风格用
 node bin/rs.mjs new    <英文短名>            # 建工程
 node bin/rs.mjs prep   <工程目录> <口播原片> --face-x <像素> --aspect portrait|landscape
 node bin/rs.mjs words  <工程目录> <录音>     # 已有录音：做出 voice.wav 和逐字时间
@@ -92,6 +93,8 @@ node bin/rs.mjs review <工程目录> [--tailnet] # 审片页：在画面上写�
 | `cta` | 导流 | 墨绿卡说动作，巨号关键词砸下来，小字说换来什么 |
 
 声明文件要写 `"style"` 和 `"aspect"`（`portrait` 或 `landscape`）。风格有 `guandian`、`ali`、`xiaolin`、`fenping`、`qingdan`，在 `styles/*.json`，定义颜色、字体、动作性格、人像放法和混音；动作只有一份。试看别的风格不用改文件：`rs frames <工程> <场景> --style xiaolin`。
+
+想要自带五种以外的风格，可以照一条参考片新建：配色、字幕、动作性格、真人放法都能调，新的版式和动作要改代码。做法见 [按参考片新建风格](references/new-style.md)。
 
 长片可以写 `chapters`，顶部显示章节和进度。
 
