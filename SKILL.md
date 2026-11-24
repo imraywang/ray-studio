@@ -46,6 +46,8 @@ node $RS/bin/rs.mjs frames <工程> <场景> --style xiaolin
 node $RS/bin/rs.mjs prep <工程> <原片> --face-x <像素> --aspect landscape --names "这期的英文名"
 ```
 
+抠像约每秒 5 帧，1 分钟的原片要六七分钟。原片只有 1080p 时，竖屏的全屏真人是放大出来的，会偏软，`A` 版式少用推近；有 4K 原片就用 4K。这期有英文名或专有名词时写进 `--names`，否则容易听错。
+
 把脚本打印的时长写进 `footageEnd`。竖屏 `footage` 填 `pop`、`matte`、`full`、`voice`、`endStill`、`endHead`；横屏不抠像，填 `wide`、`voice`，再把打印的比例写进 `faceX`（人像卡按它裁）。
 
 **一个主题**：

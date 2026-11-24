@@ -657,6 +657,9 @@ function cmdFinal(dir, quality) {
 }
 
 const argv = process.argv.slice(2);
+// 素材准备的脚本从这里进，用同一个 Python 环境。放在最前面，参数原样传过去
+const SCRIPTS = { prep: "prep_koubo.py", words: "words.py", voice: "voice.py", matte: "matte.py" };
+if (SCRIPTS[argv[0]]) process.exit(spawnSync(PY, [path.join(ROOT, "scripts", SCRIPTS[argv[0]]), ...argv.slice(1)], { stdio: "inherit" }).status ?? 1);
 for (const key of ["style", "aspect"]) {
   const i = argv.indexOf(`--${key}`);
   if (i >= 0) [, TRY[key]] = argv.splice(i, 2);
@@ -669,9 +672,6 @@ if (argv[0] === "styles") {
   process.exit(0);
 }
 if (argv[0] === "doctor") cmdDoctor();
-// 素材准备的脚本从这里进，用同一个 Python 环境
-const SCRIPTS = { prep: "prep_koubo.py", words: "words.py", voice: "voice.py", matte: "matte.py" };
-if (SCRIPTS[argv[0]]) process.exit(spawnSync(PY, [path.join(ROOT, "scripts", SCRIPTS[argv[0]]), ...argv.slice(1)], { stdio: "inherit" }).status ?? 1);
 const [cmd, target, ...rest] = argv;
 if (!cmd || !target) die("用法：rs doctor | rs styles | rs new <短名> | rs prep|words|voice|matte <工程目录> ... | rs check|frames|render|final|qa|review <工程目录> [场景...] [-q looks|delivery]");
 if (cmd === "new") {
