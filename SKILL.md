@@ -131,4 +131,3 @@ node $RS/bin/rs.mjs qa <工程>                   # 按风格的响度量成片�
 
 - 不发布，只到成片。要封面转 `ray-cover`。
 - 只读原片，不改、不移动。
-- 不复制 overlay-studio 的源码，只学思路。

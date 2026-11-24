@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """主题直出的配音：整篇稿子一次读完（逐句生成情绪不对），转写成逐字时间。
 
-usage: python3 voice.py <工程目录> <稿子.txt> [--voice ray] [--speed 1.0]
+usage: python3 voice.py <工程目录> <稿子.txt> --voice <音色名> [--speed 1.0]
 产出 assets/footage/voice.wav、words.json。音色注册表在 ~/.config/ray-explainer/voices.json，
 目前只接 MiniMax 音色（按字数收费）。念法规则：数字、字母混写先改成读法再送进来。
 """
@@ -10,7 +10,7 @@ import argparse, json, os, subprocess, sys
 ap = argparse.ArgumentParser()
 ap.add_argument("project")
 ap.add_argument("script")
-ap.add_argument("--voice", default="ray")
+ap.add_argument("--voice", required=True, help="音色表里的名字")
 ap.add_argument("--speed", type=float, default=1.0)
 ap.add_argument("--redo", action="store_true", help="重新配音。默认已有 voice.wav 就只重新转写，不再花钱")
 a = ap.parse_args()

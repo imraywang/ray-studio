@@ -1,8 +1,30 @@
 # ray-studio
 
-给一条口播或一个主题，做出动效精美的视频，风格和横竖屏都可选。没有编辑台：Agent 改声明文件，自己看关键帧，只重渲改过的场景。
+给一条录好的口播或一个主题，做出带动效的视频，风格和横竖屏都可选。没有编辑台：Agent 改一份声明文件，自己看关键帧，只重渲改过的场景。
 
-作为 skill 使用：把仓库链到 `~/.claude/skills/ray-studio`，流程见 [SKILL.md](SKILL.md)，全部动作见 [动作词汇](references/vocabulary.md)。依赖 Node、ffmpeg、`hyperframes`、`mlx_whisper`，成片检查要 numpy。配音用 MiniMax，音色表在 `~/.config/ray-explainer/voices.json`。
+## 安装
+
+```bash
+git clone https://github.com/imraywang/ray-studio.git
+ln -s "$PWD/ray-studio" ~/.claude/skills/ray-studio
+```
+
+之后对 Agent 说「用 ray-studio 把这条口播做成动效片」即可，流程见 [SKILL.md](SKILL.md)，全部动作见 [动作词汇](references/vocabulary.md)。
+
+依赖：Node、ffmpeg、[HyperFrames](https://github.com/heygen-com/hyperframes)、`mlx_whisper`（转写逐字时间，需要 Apple 芯片）；成片检查要 numpy。
+
+## 配音（可选）
+
+用录好的口播不需要配音。从主题直接出片时，`scripts/voice.py` 用 MiniMax 的音色整篇读稿，按字数收费。要准备两样：
+
+- 环境变量 `MINIMAX_API_KEY`。国内平台的 key 另设 `MINIMAX_API_HOST=https://api.minimax.cn`。
+- 音色表 `~/.config/ray-explainer/voices.json`，名字自己起，用 `--voice <名字>` 选：
+
+```json
+{
+  "my-voice": { "provider": "minimax", "voice_id": "你在 MiniMax 的音色编号", "model": "speech-2.8-hd" }
+}
+```
 
 ## 用法
 
@@ -16,7 +38,7 @@ node bin/rs.mjs final  <工程目录>            # 画面按帧拼接，整条�
 node bin/rs.mjs qa     <工程目录>            # 量响度、峰值、黑场、空画面，导出切点图
 ```
 
-工程目录放 `studio.json`、逐字时间轴 `words.json` 和 `assets/`。素材不进这个仓库。示例见 `examples/`。
+工程目录放 `studio.json`、逐字时间轴 `words.json` 和 `assets/`，默认建在 `~/Movies/ray-studio/`。示例见 `examples/`：示例只带声明文件，不带视频和图片素材，用来看写法。
 
 ## 声明文件
 
@@ -52,8 +74,8 @@ node bin/rs.mjs qa     <工程目录>            # 量响度、峰值、黑场�
 
 每个场景默认带呼吸层：手持晃动、缓慢推近、部件各自漂浮、落地余震和跟随。字幕不参与，要稳。落地和裁决的音效由动作自动带出。
 
-所有画面都是时间 t 的纯函数，渲染依赖 [HyperFrames](https://github.com/heygen-com/hyperframes)。
+所有画面都是时间 t 的纯函数：不读时钟，不用随机数，可以跳到任意一帧。
 
-## 来源
+## 许可
 
-部分动作思路学习自 [overlay-studio](https://github.com/jeszhou/overlay-studio)。代码和参数是这里独立实现的，没有复制它的源码。
+[CC BY-NC 4.0](LICENSE)。

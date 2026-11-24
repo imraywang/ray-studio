@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Measure a finished render and export frames to look at, before Ray sees it. One command after every render.
+"""Measure a finished render and export frames to look at, before the author sees it. One command after every render.
 Idea and the frame exports from Peter Yang's video-short qa.py (MIT, https://github.com/petergyang/video-short); the
-blank-frame and blue/purple checks are the two parts of film_gate.py (huashu-art-motion, MIT) that proved useful on
-Ray's films. film_gate's motion metrics are gone: Ray 10-16 and 10-22, our films are mostly real footage, so "fast
+blank-frame and blue/purple checks are the two parts of film_gate.py (huashu-art-motion, MIT) that proved useful here.
+film_gate's motion metrics are gone: these films are mostly real footage, so "fast
 motion ratio" and the other twenty readings never changed a film (red on 12 of 15 films, none fixed for it).
 
 usage: rs qa <工程>，或 python3 qa_video.py <video> --scenes scenes.json [--lufs -16] [--out DIR] [--allow-blue-purple 理由]
@@ -16,7 +16,7 @@ Hard checks (exit 1 if any fails):
     A topic that needs it (cyberpunk purple, Starry Night): --allow-blue-purple "理由" turns it into a note.
 Reported, to look at:
   stretches ≥ 3 s with no visible change (ffmpeg freezedetect at −35 dB, so a uniform slow push of a few percent
-  counts as still: it is not motion). On 10-13 this kind of reading took a scene from 12 s to 6 s without change.
+  counts as still: it is not motion). Once this kind of reading took a scene from 12 s to 6 s without change.
 Frames, in qa/<video name>/ next to the video:
   contact.jpg   the whole video, 1 frame every 1–2 s
   opening.jpg   the first 3 s at 6 fps (is the hook already on screen?)

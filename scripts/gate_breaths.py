@@ -1,10 +1,10 @@
-"""Silence the inhale breaths between phrases in a recording of Ray talking. Timing is unchanged (nothing is cut out).
+"""Silence the inhale breaths between phrases in a talking-head recording. Timing is unchanged (nothing is cut out).
 
 usage:
   python3 gate_breaths.py <video-or-audio> -o voice.wav            # writes the cleaned track + voice.cuts.json
   python3 gate_breaths.py <video-or-audio> -o voice.wav --verify   # also re-transcribes both and prints any word change
 
-How a breath is found (tuned on Ray's 2026-10-20 course recording, 27 breaths / 7.4 s in 190 s):
+How a breath is found (tuned on a 190 s course recording: 27 breaths, 7.4 s):
   - 10 ms frames; a breath frame is noisy (zero-crossing >= 0.08), centred around 2.4–4.8 kHz, between -52 and -14 dBFS
   - a run of >= 120 ms such frames, with a pause (<= -24 dBFS) just before it -> an inhale between phrases.
     Runs without that pause are fricatives inside a word (sh/f/z) and are left alone.
