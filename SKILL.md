@@ -3,9 +3,9 @@ name: ray-studio
 description: 给一条录好的口播或一个主题，做出动效精美、风格和横竖屏可选的视频：Agent 写声明文件、自己看关键帧、只重渲改过的场景。用于“用 ray-studio 做”“这条口播做成动效片”“给这个主题做个动效视频”。只写稿转 ray-kb / ray-kepu；封面转 ray-cover。不发布。
 ---
 
-# Ray Studio
+# ray-studio：口播或主题做成动效视频
 
-没有编辑台。Ray 只说要什么、哪里不对，Agent 改 `studio.json`，自己看帧，再交片。
+没有编辑台。作者只说要什么、哪里不对，Agent 改 `studio.json`，自己看帧，再交片。
 
 `$RS` 指本 skill 目录。视频文件放 `~/Movies/ray-studio/`，不进 vault，也不进这个仓库。
 
@@ -13,7 +13,7 @@ description: 给一条录好的口播或一个主题，做出动效精美、风�
 
 ```
 口播原片 ─ prep_koubo ─┐
-                       ├─ 分段 → 写 studio.json → check → frames 自己看 → render 给 Ray → final → qa
+                       ├─ 分段 → 写 studio.json → check → frames 自己看 → render 给作者 → final → qa
 主题 ─ 写稿 ─ voice ───┘
 ```
 
@@ -24,7 +24,7 @@ node $RS/bin/rs.mjs styles             # 看有哪些风格
 node $RS/bin/rs.mjs new <英文短名>
 ```
 
-`studio.json` 必须写 `style` 和 `aspect`，不留默认值。Ray 没说时按发布平台定：YouTube、B 站、课程用 `landscape`，抖音、小红书、视频号用 `portrait`；界面录屏多的片子优先横屏，竖屏看不清字。风格拿不准就推荐两种，用下面的命令各出一张帧给 Ray 选：
+`studio.json` 必须写 `style` 和 `aspect`，不留默认值。作者没说时按发布平台定：YouTube、B 站、课程用 `landscape`，抖音、小红书、视频号用 `portrait`；界面录屏多的片子优先横屏，竖屏看不清字。风格拿不准就推荐两种，用下面的命令各出一张帧给 作者选：
 
 ```bash
 node $RS/bin/rs.mjs frames <工程> <场景> --style xiaolin
@@ -41,11 +41,11 @@ python3 $RS/scripts/prep_koubo.py <工程> <原片> --face-x <像素> --aspect l
 把脚本打印的时长写进 `footageEnd`。竖屏 `footage` 填 `pop`、`matte`、`full`、`voice`、`endStill`、`endHead`；横屏不抠像，填 `wide`、`voice`，再把打印的比例写进 `faceX`（人像卡按它裁）。
 
 **一个主题**：
-1. 先写稿。讲清一件事用 `ray-kepu`，Ray 下判断用 `ray-kb`。稿子是 Ray 的话，事实要有来源。
+1. 先写稿。讲清一件事用 `ray-kepu`，作者下判断用 `ray-kb`。稿子是作者的话，事实要有来源。
 2. 把确认过的旁白存成 txt，数字和字母混写先改成读法，然后配音。`voice.py` 按字数收费，开跑前说一声字数。
 
 ```bash
-python3 $RS/scripts/voice.py <工程> <稿子.txt> --voice ray
+python3 $RS/scripts/voice.py <工程> <稿子.txt> --voice <音色名>
 ```
 
 主题片用 `F` 版式（无真人）。真实素材放 `assets/img/`，用 `figure` 动作。
@@ -56,7 +56,7 @@ python3 $RS/scripts/voice.py <工程> <稿子.txt> --voice ray
 
 ### 3. 确认
 
-Ray 没说「直接做」时，分段表（每段讲什么、用什么动作）给 Ray 看过再往下。
+作者没说「直接做」时，分段表（每段讲什么、用什么动作）给作者看过再往下。
 
 ### 4. 写 studio.json
 
@@ -86,7 +86,7 @@ node $RS/bin/rs.mjs frames <工程> [场景]
 - 有没有超过一秒的空画面；动作是否踩在对的字上
 - 时间写的词是否在前面出现过（如「月底」开场就有，后面要写 `月底#2`）
 
-自己能修的修完再给 Ray 看。
+自己能修的修完再给作者看。
 
 ### 6. 出片
 
@@ -100,7 +100,7 @@ node $RS/bin/rs.mjs qa <工程>                   # 按风格的响度量成片�
 
 ### 7. 改片
 
-Ray 说「0:30 太快」「第 3 层太空」：从时间点找到场景，只改对应的动作，重看关键帧，`render` 那一场，把片段发给 Ray。
+作者说「0:30 太快」「第 3 层太空」：从时间点找到场景，只改对应的动作，重看关键帧，`render` 那一场，把片段发给作者。
 
 词汇不够时，在 `engine/blocks.js` 现写一个动作，并在 `rs.mjs` 的 `sfxOf`、`TIME_KEYS` 补上。好用的留下，写进词汇表。写动作只有一条硬规则：**画面只由 t 决定**，不读时钟，不用随机数，不读上一帧的样式。
 
@@ -116,7 +116,7 @@ Ray 说「0:30 太快」「第 3 层太空」：从时间点找到场景，只�
 | `fenping` | 竖屏观点和科普口播：上画面下真人，字幕是接缝上的黑胶囊，讲人物和名词时整屏 |
 | `qingdan` | 第一个、第二个的清单口播：编号卡、截图卡、探头真人，字幕一次一个词 |
 
-版式：`S` 画板、`A` 全屏真人、`F` 无真人、`W` 全屏（录屏、新闻、整屏卡片，横屏可带角落小窗）。竖屏的 `F` 版式画面偏空，主题片要多放真实截图和录屏，交片时提醒 Ray。
+版式：`S` 画板、`A` 全屏真人、`F` 无真人、`W` 全屏（录屏、新闻、整屏卡片，横屏可带角落小窗）。竖屏的 `F` 版式画面偏空，主题片要多放真实截图和录屏，交片时提醒作者。
 
 每种风格的做法和常用动作：
 
@@ -125,7 +125,7 @@ Ray 说「0:30 太快」「第 3 层太空」：从时间点找到场景，只�
 - `fenping`：讲数字用 `S`，讲人物和名词用 `W` 整屏（`figure` 配 `name`、`term`），不用分屏，字卡会挡嘴。画面上不写字幕已经说的完整中文，只放出处、原词、数字和图形。
 - `qingdan`：每项开头是 `A` 版式的 `numcard`，说明用 `S` 版式的 `screen` 配 `above`，收尾用 `thread` 和 `cta`。
 
-没有迁的：盖章（Ray 10-25 不要了）、AI 画的漫画人物卡（要花钱，涉及肖像）。
+没有做的：盖章、AI 画的漫画人物卡（要花钱，涉及肖像）。
 
 ## 边界
 
