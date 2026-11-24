@@ -18,7 +18,7 @@ ln -s "$PWD/ray-studio" ~/.claude/skills/ray-studio
 用录好的口播不需要配音。从主题直接出片时，`scripts/voice.py` 用 MiniMax 的音色整篇读稿，按字数收费。要准备两样：
 
 - 环境变量 `MINIMAX_API_KEY`。国内平台的 key 另设 `MINIMAX_API_HOST=https://api.minimax.cn`。
-- 音色表 `~/.config/ray-explainer/voices.json`，名字自己起，用 `--voice <名字>` 选：
+- 音色表 `~/.config/ray-studio/voices.json`，名字自己起，用 `--voice <名字>` 选：
 
 ```json
 {

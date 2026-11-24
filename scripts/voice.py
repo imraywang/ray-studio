@@ -2,7 +2,7 @@
 """主题直出的配音：整篇稿子一次读完（逐句生成情绪不对），转写成逐字时间。
 
 usage: python3 voice.py <工程目录> <稿子.txt> --voice <音色名> [--speed 1.0]
-产出 assets/footage/voice.wav、words.json。音色注册表在 ~/.config/ray-explainer/voices.json，
+产出 assets/footage/voice.wav、words.json。音色表在 ~/.config/ray-studio/voices.json，
 目前只接 MiniMax 音色（按字数收费）。念法规则：数字、字母混写先改成读法再送进来。
 """
 import argparse, json, os, subprocess, sys
@@ -17,7 +17,12 @@ a = ap.parse_args()
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import minimax_api
 
-voices = json.load(open(os.path.expanduser("~/.config/ray-explainer/voices.json")))
+VOICES = os.path.expanduser("~/.config/ray-studio/voices.json")
+if not os.path.exists(VOICES):
+    sys.exit(f"没有音色表 {VOICES}，格式见 README 的「配音」")
+voices = json.load(open(VOICES))
+if a.voice not in voices:
+    sys.exit(f"音色表里没有 {a.voice}，现有：{'、'.join(voices) or '空'}")
 v = voices[a.voice]
 if v.get("provider") != "minimax":
     sys.exit(f"voice.py 目前只接 MiniMax 音色，{a.voice} 是 {v.get('provider')}")
