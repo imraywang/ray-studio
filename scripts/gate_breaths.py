@@ -17,6 +17,9 @@ Output is 48 kHz stereo WAV, same length as the input. Use it in place of the fo
 import argparse, difflib, json, os, subprocess, sys, tempfile, wave
 import numpy as np
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import tools
+
 ap = argparse.ArgumentParser()
 ap.add_argument("src")
 ap.add_argument("-o", "--out", required=True)
@@ -80,7 +83,7 @@ if a.verify:
     def words(path, name):
         wav16 = os.path.join(tmp, name + ".wav")
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", path, "-ac", "1", "-ar", "16000", wav16], check=True)
-        subprocess.run(["mlx_whisper", wav16, "--model", "mlx-community/whisper-large-v3-turbo", "--language", "zh",
+        subprocess.run([tools.whisper(), wav16, "--model", "mlx-community/whisper-large-v3-turbo", "--language", "zh",
                         "--output-format", "json", "--output-dir", tmp, "--output-name", name], check=True, capture_output=True)
         d = json.load(open(os.path.join(tmp, name + ".json")))
         return "".join(s["text"] for s in d["segments"])

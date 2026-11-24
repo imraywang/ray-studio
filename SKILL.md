@@ -13,9 +13,17 @@ description: 给一条录好的口播或一个主题，做出动效精美、风�
 
 ```
 口播原片 ─ prep_koubo ─┐
-                       ├─ 分段 → 写 studio.json → check → frames 自己看 → render 给作者 → final → qa
+                       ├─ 分段 → 写 studio.json → check → frames 自己看 → render 给作者 → final → qa → review
 主题 ─ 写稿 ─ voice ───┘
 ```
+
+### 0. 第一次用先自检
+
+```bash
+node $RS/bin/rs.mjs doctor
+```
+
+缺的按它给的命令装，必需的齐了再往下。没碰过这个 skill 的人，先照 README 的「先试跑一条」跑通一遍。
 
 ### 1. 定风格和画幅，建工程
 
@@ -35,17 +43,18 @@ node $RS/bin/rs.mjs frames <工程> <场景> --style xiaolin
 **录好的口播**：抽一帧量鼻梁的 x 像素，先 `--dry-run` 看裁切。抠像慢，放后台。
 
 ```bash
-python3 $RS/scripts/prep_koubo.py <工程> <原片> --face-x <像素> --aspect landscape --names "这期的英文名"
+node $RS/bin/rs.mjs prep <工程> <原片> --face-x <像素> --aspect landscape --names "这期的英文名"
 ```
 
 把脚本打印的时长写进 `footageEnd`。竖屏 `footage` 填 `pop`、`matte`、`full`、`voice`、`endStill`、`endHead`；横屏不抠像，填 `wide`、`voice`，再把打印的比例写进 `faceX`（人像卡按它裁）。
 
 **一个主题**：
 1. 先有稿。稿子由作者给，或先和作者把稿子定下来；稿子是作者的话，事实要有来源。
-2. 把确认过的旁白存成 txt，数字和字母混写先改成读法，然后配音。`voice.py` 按字数收费，开跑前说一声字数。
+2. 把确认过的旁白存成 txt，数字和字母混写先改成读法，然后配音。`rs voice` 按字数收费，开跑前说一声字数；没配 MiniMax 就告诉作者，改用他自己录的或别处配好的录音。
 
 ```bash
-python3 $RS/scripts/voice.py <工程> <稿子.txt> --voice <音色名>
+node $RS/bin/rs.mjs voice <工程> <稿子.txt> --voice <音色名>   # 要 MiniMax 的 key 和音色表，见 README
+node $RS/bin/rs.mjs words <工程> <录音文件>                   # 已有录音：只转写，不花钱
 ```
 
 主题片用 `F` 版式（无真人）。真实素材放 `assets/img/`，用 `figure` 动作。
@@ -98,9 +107,22 @@ node $RS/bin/rs.mjs qa <工程>                   # 按风格的响度量成片�
 
 `final` 提示帧数对不上就是有问题，不要交。
 
-### 7. 改片
+### 7. 审片
 
-作者说「0:30 太快」「第 3 层太空」：从时间点找到场景，只改对应的动作，重看关键帧，`render` 那一场，把片段发给作者。
+`qa` 全过以后，在后台开审片页，把地址给作者：
+
+```bash
+node $RS/bin/rs.mjs review <工程> [--tailnet]    # 第二轮起加 --no-open，成片更新后页面自己刷新
+```
+
+- 作者在页面里播片，暂停在任意一帧写批注，点「发送批注」；点「可以了」才算过。
+- 脚本收到后会打印批注并退出，内容也写在 `renders/review/feedback-<片名>.md`。每条带时间、场景、那时在说的话和那一帧的截图。用 Read 看截图，逐条改。
+- 作者要在手机上看时加 `--tailnet`，把打印出的 100.x 地址发给他；本机地址只在这台电脑上能开。
+- 脚本会一直等到作者发送，所以放后台跑，不要干等。
+
+### 8. 改片
+
+作者说「0:30 太快」「第 3 层太空」：从时间点找到场景，只改对应的动作，重看关键帧，`render` 那一场，把片段发给作者，或重跑 `final` 让审片页刷新。
 
 词汇不够时，在 `engine/blocks.js` 现写一个动作，并在 `rs.mjs` 的 `sfxOf`、`TIME_KEYS` 补上。好用的留下，写进词汇表。写动作只有一条硬规则：**画面只由 t 决定**，不读时钟，不用随机数，不读上一帧的样式。
 

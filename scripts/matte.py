@@ -4,7 +4,10 @@
 usage: python3 matte.py <工程目录> <场景开始秒> <场景结束秒> [--src assets/footage/face_wide.mp4]
 产出 assets/footage/matte-<开始秒>.webm，把这个路径写进场景的 "matte" 字段。
 """
-import argparse, os, subprocess
+import argparse, os, subprocess, sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import tools
 
 ap = argparse.ArgumentParser()
 ap.add_argument("project")
@@ -16,6 +19,6 @@ root = os.path.abspath(a.project)
 seg = f"assets/footage/_seg-{a.start:g}.mp4"
 out = f"assets/footage/matte-{a.start:g}.webm"
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{a.start}", "-t", f"{a.end - a.start}", "-i", a.src, "-an", "-c:v", "libx264", "-crf", "18", "-g", "30", "-pix_fmt", "yuv420p", seg], check=True, cwd=root)
-subprocess.run(["hyperframes", "remove-background", seg, "-o", out, "--device", "cpu", "--quality", "best"], check=True, cwd=root)
+subprocess.run([*tools.hf(), "remove-background", seg, "-o", out, "--device", "cpu", "--quality", "best"], check=True, cwd=root)
 os.remove(f"{root}/{seg}")
 print(out)

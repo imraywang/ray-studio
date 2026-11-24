@@ -6,3 +6,4 @@ node_modules/
 .studio/
 renders/
 local/
+__pycache__/

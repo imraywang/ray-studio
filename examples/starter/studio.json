@@ -1,0 +1,18 @@
+{
+ "title": "starter",
+ "style": "guandian",
+ "aspect": "portrait",
+ "words": "words.json",
+ "footage": { "voice": "assets/footage/voice.wav" },
+ "captions": ["一天有", "24个小时", "睡觉用掉8个", "工作用掉8个", "剩下的", "*8个小时*", "决定你是谁"],
+ "scenes": [
+  { "id": "day", "layout": "F", "start": 0, "end": 5.2, "beats": [
+    { "id": "h", "do": "headline", "text": "一天 24 小时", "accent": "24", "at": 0.1 },
+    { "id": "t", "do": "tally", "total": 24, "hit": 8, "value": 8, "unit": "小时", "label": "真正属于你的", "at": 0.6, "fade": "睡觉", "land": "工作" }
+  ] },
+  { "id": "you", "layout": "F", "start": 5.2, "end": 8.64, "beats": [
+    { "id": "h2", "do": "headline", "text": "剩下的 8 小时", "accent": "8", "at": 0.1 },
+    { "id": "n", "do": "note", "text": "决定你是谁", "at": "决定" }
+  ] }
+ ]
+}

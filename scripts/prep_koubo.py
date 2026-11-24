@@ -17,6 +17,8 @@ usage: python3 prep_koubo.py <工程目录> <原片> --face-x 1820 --aspect port
 import argparse, json, os, shlex, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import tools
 ap = argparse.ArgumentParser()
 ap.add_argument("project")
 ap.add_argument("src")
@@ -67,9 +69,9 @@ wav = f"{ft}/_src.wav"
 run(["ffmpeg", "-v", "error", "-y", *cut, "-vn", "-c:a", "pcm_s16le", wav])
 run([sys.executable, f"{HERE}/gate_breaths.py", wav, "-o", f"{ft}/voice.wav", "--verify"])
 prompt = "以下是普通话的句子，使用简体中文。" + (a.names + "。" if a.names else "")
-run(["mlx_whisper", wav, "--model", "mlx-community/whisper-large-v3-turbo", "--language", "zh", "--initial-prompt", prompt, "--condition-on-previous-text", "False", "--word-timestamps", "True", "--output-format", "json", "--output-dir", ft])
+run([tools.whisper(), wav, "--model", "mlx-community/whisper-large-v3-turbo", "--language", "zh", "--initial-prompt", prompt, "--condition-on-previous-text", "False", "--word-timestamps", "True", "--output-format", "json", "--output-dir", ft])
 if not a.no_matte:
-    run(["hyperframes", "remove-background", "assets/footage/face_pop.mp4", "-o", "assets/footage/face_pop_matte.webm", "--device", "cpu", "--quality", "best"], cwd=root)
+    run([*tools.hf(), "remove-background", "assets/footage/face_pop.mp4", "-o", "assets/footage/face_pop_matte.webm", "--device", "cpu", "--quality", "best"], cwd=root)
     # 解码要指定 libvpx-vp9，否则 alpha 通道会丢
     run(["ffmpeg", "-v", "error", "-y", "-c:v", "libvpx-vp9", "-sseof", "-0.3", "-i", f"{ft}/face_pop_matte.webm", "-frames:v", "1", "-update", "1", "-vf", "crop=480:250:300:0", f"{im}/end_head.png"])
 if not a.dry_run:

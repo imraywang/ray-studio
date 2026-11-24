@@ -17,7 +17,12 @@ const ENGINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../en
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ENGINE_JS = ["motion.js", "blocks.js", "extras.js"];
 const ENGINE_CSS = ["motion.css", "extras.css"];
-const HF = process.env.RS_HYPERFRAMES || "hyperframes";
+const onPath = (bin) => spawnSync("which", [bin], { encoding: "utf8" }).status === 0;
+// HyperFrames：装了全局命令就用它，否则用 npx 临时取，新装的机器不用先全局安装
+const [HF, HF_PRE] = process.env.RS_HYPERFRAMES ? [process.env.RS_HYPERFRAMES, []] : onPath("hyperframes") ? ["hyperframes", []] : ["npx", ["--yes", "hyperframes"]];
+// Python：脚本要 numpy 和 mlx_whisper。有 ray-studio 自己的环境就用它，否则用系统的
+const PY_ENV = path.join(process.env.HOME, ".local/share/ray-studio/py-env");
+const PY = process.env.RS_PYTHON || (fs.existsSync(path.join(PY_ENV, "bin/python")) ? path.join(PY_ENV, "bin/python") : "python3");
 const FPS = 30;
 const LAYOUTS = { portrait: ["S", "A", "F", "W"], landscape: ["S", "A", "F", "W"] };
 const SIZE = { portrait: [1080, 1920], landscape: [1920, 1080] };
@@ -457,12 +462,13 @@ const HF_DOWNGRADE = new Set(["subcomposition_root_styled_by_class"]);
 // 官方检查按场景跑：工程里同一时间只有一场
 function hfCheck(dir, doc, scene) {
   writeProject(dir, doc, scene);
-  const r = spawnSync(HF, ["check", dir, "--json"], { encoding: "utf8", maxBuffer: 1 << 28 });
+  const r = spawnSync(HF, [...HF_PRE, "check", dir, "--json"], { encoding: "utf8", maxBuffer: 1 << 28 });
   let report;
   try {
     report = JSON.parse(r.stdout);
   } catch {
-    return { errors: [`${scene.id}：hyperframes check 没跑完\n${(r.stderr || r.stdout || "").slice(-800)}`], warnings: 0 };
+    const why = r.error ? `启动不了 ${HF}：${r.error.message}。跑 rs doctor 看缺什么` : (r.stderr || r.stdout || "").slice(-800);
+    return { errors: [`${scene.id}：hyperframes check 没跑完\n${why}`], warnings: 0 };
   }
   const findings = ["lint", "runtime", "layout", "contrast", "craft", "audio"].flatMap((k) => report[k]?.findings ?? []);
   const isError = (f) => f.severity === "error" && !HF_DOWNGRADE.has(f.code);
@@ -526,7 +532,7 @@ function cmdFrames(dir, wanted) {
     const ts = keyTimes(scene);
     const shot = path.join(dir, ".studio/frames", scene.id);
     fs.rmSync(shot, { recursive: true, force: true });
-    run(HF, ["snapshot", dir, "-o", shot, "--at", ts.join(","), "--no-end", "--describe=false"]);
+    run(HF, [...HF_PRE, "snapshot", dir, "-o", shot, "--at", ts.join(","), "--no-end", "--describe=false"]);
     const pngs = fs.readdirSync(shot).filter((f) => f.endsWith(".png")).sort();
     const cols = Math.min(6, pngs.length);
     const sheet = path.join(outDir, `frames-${scene.id}${TRY.style ? `-${TRY.style}` : ""}.jpg`);
@@ -552,7 +558,7 @@ function renderChunks(dir, doc, scenes, wanted, quality) {
       writeProject(dir, doc, scene);
       const began = Date.now();
       const tmp = `${chunk}.tmp.mp4`;
-      run(HF, ["render", dir, "-q", quality, "-f", String(FPS), "-o", tmp, "--quiet"]);
+      run(HF, [...HF_PRE, "render", dir, "-q", quality, "-f", String(FPS), "-o", tmp, "--quiet"]);
       fs.renameSync(tmp, chunk);
       console.log(`${scene.id}: 重渲 ${scene.dur.toFixed(1)} 秒片段，用时 ${((Date.now() - began) / 1000).toFixed(1)} 秒`);
     }
@@ -577,8 +583,45 @@ function cmdQa(dir) {
   const { doc } = load(dir);
   const video = path.join(dir, "renders", `${doc.title}${TRY.style ? `-${TRY.style}` : ""}-final.mp4`);
   if (!fs.existsSync(video)) die(`还没有成片：${video}，先跑 rs final`);
-  const r = spawnSync("python3", [path.join(ROOT, "scripts/qa_video.py"), video, "--scenes", path.join(dir, "renders/scenes.json"), "--lufs", String(doc.styleSpec.mix?.lufs ?? -16)], { stdio: "inherit" });
+  const r = spawnSync(PY, [path.join(ROOT, "scripts/qa_video.py"), video, "--scenes", path.join(dir, "renders/scenes.json"), "--lufs", String(doc.styleSpec.mix?.lufs ?? -16)], { stdio: "inherit" });
   process.exit(r.status ?? 1);
+}
+
+// 审片页：作者在画面上写批注，点发送后批注写进 renders/review/ 并打印出来
+function cmdReview(dir, extra) {
+  const { doc } = load(dir);
+  const video = path.join(dir, "renders", `${doc.title}${TRY.style ? `-${TRY.style}` : ""}-final.mp4`);
+  if (!fs.existsSync(video)) die(`还没有成片：${video}，先跑 rs final`);
+  const r = spawnSync(PY, [path.join(ROOT, "scripts/review.py"), video, "--scenes", path.join(dir, "renders/scenes.json"), ...extra], { stdio: "inherit" });
+  process.exit(r.status ?? 1);
+}
+
+// 自检：新装的机器先跑这个，缺什么、怎么装都列出来
+function cmdDoctor() {
+  const ver = (cmd, args) => {
+    const r = spawnSync(cmd, args, { encoding: "utf8" });
+    return r.status === 0 ? (r.stdout || r.stderr).trim().split("\n")[0] : null;
+  };
+  const pyHas = (mod) => spawnSync(PY, ["-c", `import ${mod}`], { encoding: "utf8" }).status === 0;
+  const whisper = onPath("mlx_whisper") || fs.existsSync(path.join(path.dirname(PY), "mlx_whisper")) || fs.existsSync(path.join(PY_ENV, "bin/mlx_whisper"));
+  const venv = `python3 -m venv ${PY_ENV.replace(process.env.HOME, "~")} && ${PY_ENV.replace(process.env.HOME, "~")}/bin/pip install numpy mlx-whisper`;
+  const voices = path.join(process.env.HOME, ".config/ray-studio/voices.json");
+  const rows = [
+    ["必需", "Node 18 以上", Number(process.versions.node.split(".")[0]) >= 18, process.version, "https://nodejs.org"],
+    ["必需", "ffmpeg", !!ver("ffmpeg", ["-version"]), "", "brew install ffmpeg"],
+    ["必需", "HyperFrames", onPath("hyperframes") || onPath("npx"), onPath("hyperframes") ? "全局命令" : "用 npx 临时取，第一次会下载", "npm i -g hyperframes"],
+    ["必需", "mlx_whisper（逐字时间，要 Apple 芯片）", whisper, "", venv],
+    ["成片检查", "numpy", pyHas("numpy"), `python: ${PY}`, venv],
+    ["配音，可选", "MINIMAX_API_KEY", !!process.env.MINIMAX_API_KEY, "", "用录好的声音不需要。要用就 export MINIMAX_API_KEY=..."],
+    ["配音，可选", "音色表", fs.existsSync(voices), "", `建 ${voices.replace(process.env.HOME, "~")}，格式见 README 的「配音」`],
+  ];
+  let missing = 0;
+  for (const [kind, name, ok, note, fix] of rows) {
+    if (!ok && kind === "必需") missing += 1;
+    console.log(`${ok ? "有  " : kind === "必需" ? "缺  " : "没有"}  ${name}${ok && note ? `  ${note}` : ""}${ok ? "" : `\n      ${kind}。${fix}`}`);
+  }
+  console.log(missing ? `\n还缺 ${missing} 样必需的，装好再开始。` : "\n必需的都有了，可以开始。");
+  process.exit(missing ? 1 : 0);
 }
 
 // 成片：画面按帧拼，音频不从片段里拼，整条重混，接缝不会有咔哒声
@@ -625,8 +668,12 @@ if (argv[0] === "styles") {
   }
   process.exit(0);
 }
+if (argv[0] === "doctor") cmdDoctor();
+// 素材准备的脚本从这里进，用同一个 Python 环境
+const SCRIPTS = { prep: "prep_koubo.py", words: "words.py", voice: "voice.py", matte: "matte.py" };
+if (SCRIPTS[argv[0]]) process.exit(spawnSync(PY, [path.join(ROOT, "scripts", SCRIPTS[argv[0]]), ...argv.slice(1)], { stdio: "inherit" }).status ?? 1);
 const [cmd, target, ...rest] = argv;
-if (!cmd || !target) die("用法：rs new <短名> | rs check|frames|render|final <工程目录> [场景...] [-q looks|delivery]");
+if (!cmd || !target) die("用法：rs doctor | rs styles | rs new <短名> | rs prep|words|voice|matte <工程目录> ... | rs check|frames|render|final|qa|review <工程目录> [场景...] [-q looks|delivery]");
 if (cmd === "new") {
   const di = rest.indexOf("--dir");
   cmdNew(target, di >= 0 ? path.resolve(rest[di + 1]) : path.join(process.env.HOME, "Movies/ray-studio"));
@@ -641,4 +688,5 @@ else if (cmd === "frames") cmdFrames(dir, names);
 else if (cmd === "render") cmdRender(dir, names, quality);
 else if (cmd === "final") cmdFinal(dir, quality);
 else if (cmd === "qa") cmdQa(dir);
+else if (cmd === "review") cmdReview(dir, rest);
 else die(`未知命令：${cmd}`);
